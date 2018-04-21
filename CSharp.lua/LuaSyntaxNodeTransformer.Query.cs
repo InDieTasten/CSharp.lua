@@ -25,7 +25,7 @@ using CSharpLua.LuaAst;
 
 namespace CSharpLua
 {
-    public sealed partial class LuaSyntaxNodeTransfor
+    public sealed partial class LuaSyntaxNodeTransformer
     {
         private const string _queryPlaceholderConflictName = "as";
 

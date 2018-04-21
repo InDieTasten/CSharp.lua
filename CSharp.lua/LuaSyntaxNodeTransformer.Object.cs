@@ -26,7 +26,7 @@ using CSharpLua.LuaAst;
 
 namespace CSharpLua
 {
-    public sealed partial class LuaSyntaxNodeTransfor
+    public sealed partial class LuaSyntaxNodeTransformer
     {
         private Stack<LuaIdentifierNameSyntax> _conditionalTemporaries = new Stack<LuaIdentifierNameSyntax>();
 
