@@ -20,44 +20,55 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace CSharpLua.LuaAst {
-  public abstract class LuaWrapFunctionStatementSynatx : LuaStatementSyntax {
-    public LuaExpressionStatementSyntax Statement { get; private set; }
-    private LuaFunctionExpressionSyntax function_ = new LuaFunctionExpressionSyntax();
+namespace CSharpLua.LuaAst
+{
+    public abstract class LuaWrapFunctionStatementSynatx : LuaStatementSyntax
+    {
+        public LuaExpressionStatementSyntax Statement { get; private set; }
+        private LuaFunctionExpressionSyntax _function = new LuaFunctionExpressionSyntax();
 
-    protected void UpdateIdentifiers(LuaIdentifierNameSyntax name, LuaIdentifierNameSyntax target, LuaIdentifierNameSyntax memberName, LuaIdentifierNameSyntax parameter = null) {
-      LuaMemberAccessExpressionSyntax memberAccess = new LuaMemberAccessExpressionSyntax(target, memberName);
-      LuaInvocationExpressionSyntax invoke = new LuaInvocationExpressionSyntax(memberAccess);
-      invoke.AddArgument(new LuaStringLiteralExpressionSyntax(name));
-      invoke.AddArgument(function_);
-      if (parameter != null) {
-        function_.AddParameter(parameter);
-      }
-      Statement = new LuaExpressionStatementSyntax(invoke);
+        protected void UpdateIdentifiers(LuaIdentifierNameSyntax name, LuaIdentifierNameSyntax target, LuaIdentifierNameSyntax memberName, LuaIdentifierNameSyntax parameter = null)
+        {
+            LuaMemberAccessExpressionSyntax memberAccess = new LuaMemberAccessExpressionSyntax(target, memberName);
+            LuaInvocationExpressionSyntax invoke = new LuaInvocationExpressionSyntax(memberAccess);
+            invoke.AddArgument(new LuaStringLiteralExpressionSyntax(name));
+            invoke.AddArgument(_function);
+            if (parameter != null)
+            {
+                _function.AddParameter(parameter);
+            }
+            Statement = new LuaExpressionStatementSyntax(invoke);
+        }
+
+        public LuaBlockSyntax Body
+        {
+            get
+            {
+                return _function.Body;
+            }
+        }
+
+        public void AddStatement(LuaStatementSyntax statement)
+        {
+            Body.Statements.Add(statement);
+        }
+
+        public void AddStatements(IEnumerable<LuaStatementSyntax> statements)
+        {
+            Body.Statements.AddRange(statements);
+        }
+
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
 
-    public LuaBlockSyntax Body {
-      get {
-        return function_.Body;
-      }
+    public sealed class LuaNamespaceDeclarationSyntax : LuaWrapFunctionStatementSynatx
+    {
+        public LuaNamespaceDeclarationSyntax(LuaIdentifierNameSyntax name, bool isContained = false)
+        {
+            UpdateIdentifiers(name, isContained ? LuaIdentifierNameSyntax.Namespace : LuaIdentifierNameSyntax.System, LuaIdentifierNameSyntax.Namespace, LuaIdentifierNameSyntax.Namespace);
+        }
     }
-
-    public void AddStatement(LuaStatementSyntax statement) {
-      Body.Statements.Add(statement);
-    }
-
-    public void AddStatements(IEnumerable<LuaStatementSyntax> statements) {
-      Body.Statements.AddRange(statements);
-    }
-
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
-
-  public sealed class LuaNamespaceDeclarationSyntax : LuaWrapFunctionStatementSynatx {
-    public LuaNamespaceDeclarationSyntax(LuaIdentifierNameSyntax name, bool isContained = false) {
-      UpdateIdentifiers(name, isContained ? LuaIdentifierNameSyntax.Namespace : LuaIdentifierNameSyntax.System, LuaIdentifierNameSyntax.Namespace, LuaIdentifierNameSyntax.Namespace);
-    }
-  }
 }

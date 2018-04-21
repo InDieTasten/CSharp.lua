@@ -41,7 +41,7 @@ Options
             {
                 try
                 {
-                    var commands = Utility.GetCommondLines(args);
+                    var commands = Utility.GetCommandLineArguments(args);
                     if (commands.ContainsKey("-h"))
                     {
                         ShowHelpInfo();
@@ -62,7 +62,7 @@ Options
                     {
                         attributes = string.Empty;
                     }
-                    Worker w = new Worker(folder, output, lib, meta, cscArguments, isClassic, indentCount, attributes);
+                    Transpiler w = new Transpiler(folder, output, lib, meta, cscArguments, isClassic, indentCount, attributes);
                     w.Do();
                     Console.WriteLine("all operator success");
                     Console.WriteLine($"end {DateTime.Now}");

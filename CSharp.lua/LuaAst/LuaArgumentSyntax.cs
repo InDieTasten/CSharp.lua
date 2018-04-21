@@ -20,43 +20,50 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpLua.LuaAst {
-  public sealed class LuaArgumentSyntax : LuaSyntaxNode {
-    public LuaExpressionSyntax Expression { get; }
+namespace CSharpLua.LuaAst
+{
+    public sealed class LuaArgumentSyntax : LuaSyntaxNode
+    {
+        public LuaExpressionSyntax Expression { get; }
 
-    public LuaArgumentSyntax(LuaExpressionSyntax expression) {
-      if (expression == null) {
-        throw new ArgumentNullException(nameof(expression));
-      }
-      Expression = expression;
+        public LuaArgumentSyntax(LuaExpressionSyntax expression)
+        {
+            Expression = expression ?? throw new ArgumentNullException(nameof(expression));
+        }
+
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
+    public sealed class LuaArgumentListSyntax : LuaSyntaxNode
+    {
+        public string OpenParenToken => Tokens.OpenParentheses;
+        public string CloseParenToken => Tokens.CloseParentheses;
+        public readonly LuaSyntaxList<LuaArgumentSyntax> Arguments = new LuaSyntaxList<LuaArgumentSyntax>();
 
-  public sealed class LuaArgumentListSyntax : LuaSyntaxNode {
-    public string OpenParenToken => Tokens.OpenParentheses;
-    public string CloseParenToken => Tokens.CloseParentheses;
-    public readonly LuaSyntaxList<LuaArgumentSyntax> Arguments = new LuaSyntaxList<LuaArgumentSyntax>();
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
+        public void AddArgument(LuaArgumentSyntax argument)
+        {
+            Arguments.Add(argument);
+        }
 
-    public void AddArgument(LuaArgumentSyntax argument) {
-      Arguments.Add(argument);
-    }
+        public void AddArgument(LuaExpressionSyntax argument)
+        {
+            AddArgument(new LuaArgumentSyntax(argument));
+        }
 
-    public void AddArgument(LuaExpressionSyntax argument) {
-      AddArgument(new LuaArgumentSyntax(argument));
+        public void AddArguments(IEnumerable<LuaExpressionSyntax> arguments)
+        {
+            foreach (var argument in arguments)
+            {
+                AddArgument(argument);
+            }
+        }
     }
-
-    public void AddArguments(IEnumerable<LuaExpressionSyntax> arguments) {
-      foreach (var argument in arguments) {
-        AddArgument(argument);
-      }
-    }
-  }
 }

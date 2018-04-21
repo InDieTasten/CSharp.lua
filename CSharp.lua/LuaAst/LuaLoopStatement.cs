@@ -20,109 +20,108 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpLua.LuaAst {
-  public sealed class LuaForInStatementSyntax : LuaStatementSyntax {
-    public LuaExpressionSyntax Expression { get; }
-    public string ForKeyword => Tokens.For;
-    public LuaIdentifierNameSyntax Identifier { get; }
-    public string InKeyword => Tokens.In;
-    public LuaExpressionSyntax Placeholder => LuaIdentifierNameSyntax.Placeholder;
+namespace CSharpLua.LuaAst
+{
+    public sealed class LuaForInStatementSyntax : LuaStatementSyntax
+    {
+        public LuaExpressionSyntax Expression { get; }
+        public string ForKeyword => Tokens.For;
+        public LuaIdentifierNameSyntax Identifier { get; }
+        public string InKeyword => Tokens.In;
+        public LuaExpressionSyntax Placeholder => LuaIdentifierNameSyntax.Placeholder;
 
-    public LuaBlockSyntax Body { get; } = new LuaBlockSyntax() {
-      OpenBraceToken = Tokens.Do,
-      CloseBraceToken = Tokens.End,
-    };
+        public LuaBlockSyntax Body { get; } = new LuaBlockSyntax()
+        {
+            OpenBraceToken = Tokens.Do,
+            CloseBraceToken = Tokens.End,
+        };
 
-    public LuaForInStatementSyntax(LuaIdentifierNameSyntax identifier, LuaExpressionSyntax expression) {
-      if (identifier == null) {
-        throw new ArgumentNullException(nameof(identifier));
-      }
-      if (expression == null) {
-        throw new ArgumentNullException(nameof(expression));
-      }
-      Identifier = identifier;
-      Expression = new LuaInvocationExpressionSyntax(LuaIdentifierNameSyntax.Each, expression);
+        public LuaForInStatementSyntax(LuaIdentifierNameSyntax identifier, LuaExpressionSyntax expression)
+        {
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+            Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+            Expression = new LuaInvocationExpressionSyntax(LuaIdentifierNameSyntax.Each, expression);
+        }
+
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
+    public sealed class LuaNumericalForStatementSyntax : LuaStatementSyntax
+    {
+        public string ForKeyword => Tokens.For;
+        public LuaIdentifierNameSyntax Identifier { get; }
+        public string EqualsToken => Tokens.Equals;
+        public LuaExpressionSyntax StartExpression { get; }
+        public LuaExpressionSyntax LimitExpression { get; }
+        public LuaExpressionSyntax StepExpression { get; }
 
-  public sealed class LuaNumericalForStatementSyntax : LuaStatementSyntax {
-    public string ForKeyword => Tokens.For;
-    public LuaIdentifierNameSyntax Identifier { get; }
-    public string EqualsToken => Tokens.Equals;
-    public LuaExpressionSyntax StartExpression { get; }
-    public LuaExpressionSyntax LimitExpression { get; }
-    public LuaExpressionSyntax StepExpression { get; }
+        public LuaBlockSyntax Body { get; } = new LuaBlockSyntax()
+        {
+            OpenBraceToken = Tokens.Do,
+            CloseBraceToken = Tokens.End,
+        };
 
-    public LuaBlockSyntax Body { get; } = new LuaBlockSyntax() {
-      OpenBraceToken = Tokens.Do,
-      CloseBraceToken = Tokens.End,
-    };
+        public LuaNumericalForStatementSyntax(
+          LuaIdentifierNameSyntax identifier,
+          LuaExpressionSyntax startExpression,
+          LuaExpressionSyntax limitExpression,
+          LuaExpressionSyntax stepExpression)
+        {
+            Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+            StartExpression = startExpression ?? throw new ArgumentNullException(nameof(startExpression));
+            LimitExpression = limitExpression ?? throw new ArgumentNullException(nameof(limitExpression));
+            StepExpression = stepExpression;
+        }
 
-    public LuaNumericalForStatementSyntax(
-      LuaIdentifierNameSyntax identifier,
-      LuaExpressionSyntax startExpression,
-      LuaExpressionSyntax limitExpression,
-      LuaExpressionSyntax stepExpression) {
-      if (identifier == null) {
-        throw new ArgumentNullException(nameof(identifier));
-      }
-      if (startExpression == null) {
-        throw new ArgumentNullException(nameof(startExpression));
-      }
-      if (limitExpression == null) {
-        throw new ArgumentNullException(nameof(limitExpression));
-      }
-      Identifier = identifier;
-      StartExpression = startExpression;
-      LimitExpression = limitExpression;
-      StepExpression = stepExpression;
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
+    public sealed class LuaWhileStatementSyntax : LuaStatementSyntax
+    {
+        public LuaExpressionSyntax Condition { get; }
+        public string WhileKeyword => LuaSyntaxNode.Tokens.While;
 
-  public sealed class LuaWhileStatementSyntax : LuaStatementSyntax {
-    public LuaExpressionSyntax Condition { get; }
-    public string WhileKeyword => LuaSyntaxNode.Tokens.While;
+        public LuaBlockSyntax Body { get; } = new LuaBlockSyntax()
+        {
+            OpenBraceToken = Tokens.Do,
+            CloseBraceToken = Tokens.End,
+        };
 
-    public LuaBlockSyntax Body { get; } = new LuaBlockSyntax() {
-      OpenBraceToken = Tokens.Do,
-      CloseBraceToken = Tokens.End,
-    };
+        public LuaWhileStatementSyntax(LuaExpressionSyntax condition)
+        {
+            Condition = condition ?? throw new ArgumentNullException(nameof(condition));
+        }
 
-    public LuaWhileStatementSyntax(LuaExpressionSyntax condition) {
-      if (condition == null) {
-        throw new ArgumentNullException(nameof(condition));
-      }
-      Condition = condition;
-    }
-
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
-
-  public sealed class LuaRepeatStatementSyntax : LuaStatementSyntax {
-    public LuaExpressionSyntax Condition { get; }
-    public string RepeatKeyword => Tokens.Repeat;
-    public string UntilKeyword => Tokens.Until;
-    public LuaBlockSyntax Body { get; } = new LuaBlockSyntax();
-
-    public LuaRepeatStatementSyntax(LuaExpressionSyntax condition) {
-      if (condition == null) {
-        throw new ArgumentNullException(nameof(condition));
-      }
-      Condition = condition;
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
+    public sealed class LuaRepeatStatementSyntax : LuaStatementSyntax
+    {
+        public LuaExpressionSyntax Condition { get; }
+        public string RepeatKeyword => Tokens.Repeat;
+        public string UntilKeyword => Tokens.Until;
+        public LuaBlockSyntax Body { get; } = new LuaBlockSyntax();
+
+        public LuaRepeatStatementSyntax(LuaExpressionSyntax condition)
+        {
+            Condition = condition ?? throw new ArgumentNullException(nameof(condition));
+        }
+
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
-  }
 }

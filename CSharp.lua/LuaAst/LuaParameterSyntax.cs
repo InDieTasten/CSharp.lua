@@ -20,26 +20,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpLua.LuaAst {
-  public sealed class LuaParameterListSyntax : LuaSyntaxNode {
-    public string OpenParenToken => Tokens.OpenParentheses;
-    public string CloseParenToken => Tokens.CloseParentheses;
-    public readonly LuaSyntaxList<LuaParameterSyntax> Parameters = new LuaSyntaxList<LuaParameterSyntax>();
+namespace CSharpLua.LuaAst
+{
+    public sealed class LuaParameterListSyntax : LuaSyntaxNode
+    {
+        public string OpenParenToken => Tokens.OpenParentheses;
+        public string CloseParenToken => Tokens.CloseParentheses;
+        public readonly LuaSyntaxList<LuaParameterSyntax> Parameters = new LuaSyntaxList<LuaParameterSyntax>();
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
-
-  public sealed class LuaParameterSyntax : LuaSyntaxNode {
-    public LuaIdentifierNameSyntax Identifier { get; }
-
-    public LuaParameterSyntax(LuaIdentifierNameSyntax identifier) {
-      Identifier = identifier;
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
+    public sealed class LuaParameterSyntax : LuaSyntaxNode
+    {
+        public LuaIdentifierNameSyntax Identifier { get; }
+
+        public LuaParameterSyntax(LuaIdentifierNameSyntax identifier)
+        {
+            Identifier = identifier;
+        }
+
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
-  }
 }

@@ -29,10 +29,10 @@ using CSharpLua.LuaAst;
 
 namespace CSharpLua {
   public sealed partial class LuaSyntaxNodeTransfor {
-    private static readonly Regex codeTemplateRegex_ = new Regex(@"(,?\s*)\{(\*?[\w|^]+)\}", RegexOptions.Compiled);
-    private Dictionary<ISymbol, LuaIdentifierNameSyntax> localReservedNames_ = new Dictionary<ISymbol, LuaIdentifierNameSyntax>();
-    private int localMappingCounter_;
-    private Stack<bool> checkeds_ = new Stack<bool>();
+    private static readonly Regex _codeTemplateRegex = new Regex(@"(,?\s*)\{(\*?[\w|^]+)\}", RegexOptions.Compiled);
+    private Dictionary<ISymbol, LuaIdentifierNameSyntax> _localReservedNames = new Dictionary<ISymbol, LuaIdentifierNameSyntax>();
+    private int _localMappingCounter;
+    private Stack<bool> _checks = new Stack<bool>();
 
     private abstract class LuaSyntaxSearcher : CSharpSyntaxWalker {
       private sealed class FoundException : Exception {
@@ -131,9 +131,9 @@ namespace CSharpLua {
     }
 
     private void AddLocalVariableMapping(LuaIdentifierNameSyntax name, SyntaxNode node) {
-      ISymbol symbol = semanticModel_.GetDeclaredSymbol(node);
+      ISymbol symbol = _semanticModel.GetDeclaredSymbol(node);
       Contract.Assert(symbol != null);
-      localReservedNames_.Add(symbol, name);
+      _localReservedNames.Add(symbol, name);
     }
 
     private void CheckLocalVariableName(ref LuaIdentifierNameSyntax identifierName, SyntaxNode node) {
@@ -146,7 +146,7 @@ namespace CSharpLua {
     }
 
     private void CheckLocalSymbolName(ISymbol symbol, ref LuaIdentifierNameSyntax name) {
-      var newName = localReservedNames_.GetOrDefault(symbol);
+      var newName = _localReservedNames.GetOrDefault(symbol);
       if (newName != null) {
         name = newName;
       }
@@ -228,7 +228,7 @@ namespace CSharpLua {
     private LuaExpressionSyntax BuildCodeTemplateExpression(string codeTemplate, ExpressionSyntax targetExpression, IEnumerable<ExpressionSyntax> arguments, ImmutableArray<ITypeSymbol> typeArguments) {
       LuaCodeTemplateExpressionSyntax codeTemplateExpression = new LuaCodeTemplateExpressionSyntax();
 
-      var matchs = codeTemplateRegex_.Matches(codeTemplate);
+      var matchs = _codeTemplateRegex.Matches(codeTemplate);
       int prevIndex = 0;
       foreach (Match match in matchs) {
         if (match.Index > prevIndex) {
@@ -241,7 +241,7 @@ namespace CSharpLua {
           AddCodeTemplateExpression(BuildMemberAccessTargetExpression(targetExpression), comma, codeTemplateExpression);
         }
         else if (key == "class") {
-          var type = semanticModel_.GetTypeInfo(targetExpression).Type;
+          var type = _semanticModel.GetTypeInfo(targetExpression).Type;
           LuaExpressionSyntax typeName;
           if (type.TypeKind == TypeKind.Enum) {
             typeName = GetTypeShortName(type);
@@ -300,24 +300,24 @@ namespace CSharpLua {
 
     private void AddExportEnum(ITypeSymbol enumType) {
       Contract.Assert(enumType.TypeKind == TypeKind.Enum);
-      generator_.AddExportEnum(enumType.ToString());
+      _generator.AddExportEnum(enumType.ToString());
     }
 
     private bool IsPropertyField(IPropertySymbol symbol) {
-      return generator_.IsPropertyField(symbol);
+      return _generator.IsPropertyField(symbol);
     }
 
     private bool IsEventFiled(IEventSymbol symbol) {
-      return generator_.IsEventFiled(symbol);
+      return _generator.IsEventFiled(symbol);
     }
 
     private INamedTypeSymbol GetTypeDeclarationSymbol(SyntaxNode node) {
       var typeDeclaration = (TypeDeclarationSyntax)FindParent(node, i => i.IsKind(SyntaxKind.ClassDeclaration) || i.IsKind(SyntaxKind.StructDeclaration));
-      return semanticModel_.GetDeclaredSymbol(typeDeclaration);
+      return _semanticModel.GetDeclaredSymbol(typeDeclaration);
     }
 
     private bool IsInternalMember(SyntaxNode node, ISymbol symbol) {
-      bool isVirtual = symbol.IsOverridable() && !generator_.IsSealed(symbol.ContainingType);
+      bool isVirtual = symbol.IsOverridable() && !_generator.IsSealed(symbol.ContainingType);
       if (!isVirtual) {
         var typeSymbol = GetTypeDeclarationSymbol(node);
         if (typeSymbol.Equals(symbol.ContainingType)) {
@@ -391,7 +391,7 @@ namespace CSharpLua {
     }
 
     private LuaLiteralExpressionSyntax GetConstExpression(ExpressionSyntax node) {
-      var constValue = semanticModel_.GetConstantValue(node);
+      var constValue = _semanticModel.GetConstantValue(node);
       if (constValue.HasValue) {
         var literalExpression = GetLiteralExpression(constValue.Value);
         return new LuaConstLiteralExpression(literalExpression, node.ToString());
@@ -459,7 +459,7 @@ namespace CSharpLua {
             return new LuaStringLiteralExpressionSyntax(new LuaIdentifierNameSyntax(parentMethod.Identifier.ValueText));
           }
         case CallerAttributeKind.FilePath: {
-            return BuildStringLiteralExpression(generator_.RemoveBaseFolder(node.SyntaxTree.FilePath));
+            return BuildStringLiteralExpression(_generator.RemoveBaseFolder(node.SyntaxTree.FilePath));
           }
         default:
           return null;
@@ -480,7 +480,7 @@ namespace CSharpLua {
       bool mayBeFalse = false;
       if (type.IsValueType) {
         if (type.SpecialType == SpecialType.System_Boolean) {
-          var constValue = semanticModel_.GetConstantValue(expression);
+          var constValue = _semanticModel.GetConstantValue(expression);
           if (constValue.HasValue && (bool)constValue.Value) {
             mayBeFalse = false;
           }
@@ -503,7 +503,7 @@ namespace CSharpLua {
         mayBeNull = false;
       }
       else if (type.IsStringType()) {
-        var constValue = semanticModel_.GetConstantValue(expression);
+        var constValue = _semanticModel.GetConstantValue(expression);
         if (constValue.HasValue) {
           mayBeNull = false;
         }
@@ -513,7 +513,7 @@ namespace CSharpLua {
             if (invocation.Expression.IsKind(SyntaxKind.SimpleMemberAccessExpression)) {
               var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
               if (memberAccess.Name.Identifier.ValueText == LuaIdentifierNameSyntax.ToStr.ValueText) {
-                var typeInfo = semanticModel_.GetTypeInfo(memberAccess.Expression).Type;
+                var typeInfo = _semanticModel.GetTypeInfo(memberAccess.Expression).Type;
                 if (typeInfo.SpecialType > SpecialType.System_Object) {
                   return false;
                 }
@@ -522,7 +522,7 @@ namespace CSharpLua {
           }
           else if (expression.IsKind(SyntaxKind.SimpleMemberAccessExpression)) {
             var memberAccess = (MemberAccessExpressionSyntax)expression;
-            var typeInfo = semanticModel_.GetTypeInfo(memberAccess.Expression).Type;
+            var typeInfo = _semanticModel.GetTypeInfo(memberAccess.Expression).Type;
             if (typeInfo.SpecialType > SpecialType.System_Object) {
               return false;
             }
@@ -540,7 +540,7 @@ namespace CSharpLua {
       if (conditionalWhenTrue.IsKind(SyntaxKind.NullLiteralExpression)) {
         return true;
       }
-      var type = semanticModel_.GetTypeInfo(conditionalWhenTrue).Type;
+      var type = _semanticModel.GetTypeInfo(conditionalWhenTrue).Type;
       return MayBeNull(conditionalWhenTrue, type) || MayBeFalse(conditionalWhenTrue, type);
     }
 
@@ -551,7 +551,7 @@ namespace CSharpLua {
           string prefix = name.Substring(0, pos);
           if (prefix != LuaIdentifierNameSyntax.System.ValueText) {
             string newPrefix = prefix.Replace(".", "");
-            var methodInfo = CurMethodInfoOrNull;
+            var methodInfo = CurrentMethodOrNull;
             if (methodInfo != null) {
               var syntaxReference = methodInfo.Symbol.DeclaringSyntaxReferences.First();
               var root = syntaxReference.GetSyntax();
@@ -560,18 +560,18 @@ namespace CSharpLua {
               }
             }
             name = newPrefix + name.Substring(pos);
-            CurCompilationUnit.AddImport(prefix, newPrefix, symbol.IsFromCode());
+            CurrentCompilationUnit.AddImport(prefix, newPrefix, symbol.IsFromCode());
           }
         }
       }
     }
 
     private LuaIdentifierNameSyntax GetTypeShortName(ISymbol symbol) {
-      return generator_.GetTypeShortName(symbol, this);
+      return _generator.GetTypeShortName(symbol, this);
     }
 
     private LuaExpressionSyntax GetTypeName(ISymbol symbol) {
-      return generator_.GetTypeName(symbol, this);
+      return _generator.GetTypeName(symbol, this);
     }
 
     private LuaExpressionSyntax BuildFieldOrPropertyMemberAccessExpression(LuaExpressionSyntax expression, LuaExpressionSyntax name, bool isStatic) {
@@ -625,14 +625,14 @@ namespace CSharpLua {
     }
 
     public override LuaSyntaxNode VisitAttribute(AttributeSyntax node) {
-      var symbol = (IMethodSymbol)semanticModel_.GetSymbolInfo(node.Name).Symbol;
+      var symbol = (IMethodSymbol)_semanticModel.GetSymbolInfo(node.Name).Symbol;
       INamedTypeSymbol typeSymbol = symbol.ContainingType;
-      if (!generator_.IsExportAttribute(typeSymbol)) {
+      if (!_generator.IsExportAttribute(typeSymbol)) {
         return null;
       }
 
       INamedTypeSymbol typeDeclarationSymbol = GetTypeDeclarationSymbol(node);
-      generator_.AddTypeDeclarationAttribute(typeDeclarationSymbol, typeSymbol);
+      _generator.AddTypeDeclarationAttribute(typeDeclarationSymbol, typeSymbol);
 
       ++baseNameNodeCounter_;
       var expression = GetTypeName(typeSymbol);
@@ -720,7 +720,7 @@ namespace CSharpLua {
     }
 
     private void CheckValueTypeAndConversion(ExpressionSyntax node, ref LuaExpressionSyntax expression) {
-      ITypeSymbol typeSymbol = semanticModel_.GetTypeInfo(node).Type;
+      ITypeSymbol typeSymbol = _semanticModel.GetTypeInfo(node).Type;
       if (typeSymbol != null) {
         if (typeSymbol.IsValueType
           && typeSymbol.TypeKind != TypeKind.Enum
@@ -802,11 +802,11 @@ namespace CSharpLua {
     }
 
     private LuaIdentifierNameSyntax GetMemberName(ISymbol symbol) {
-      return generator_.GetMemberName(symbol);
+      return _generator.GetMemberName(symbol);
     }
 
     private LuaIdentifierNameSyntax AddInnerName(ISymbol symbol) {
-      return generator_.AddInnerName(symbol);
+      return _generator.AddInnerName(symbol);
     }
 
     private void RemoveNilArgumentsAtTail(List<LuaExpressionSyntax> arguments) {
@@ -834,24 +834,24 @@ namespace CSharpLua {
     }
 
     private void PushChecked(bool isChecked) {
-      checkeds_.Push(isChecked);
+      _checks.Push(isChecked);
     }
 
     private void PopChecked() {
-      checkeds_.Pop();
+      _checks.Pop();
     }
 
     private bool IsCurChecked {
       get {
-        if (checkeds_.Count > 0) {
-          return checkeds_.Peek();
+        if (_checks.Count > 0) {
+          return _checks.Peek();
         }
-        return generator_.IsCheckedOverflow; 
+        return _generator.IsCheckedOverflow; 
       }
     }
 
     private void CheckConversion(ExpressionSyntax node, ref LuaExpressionSyntax expression) {
-      var conversion = semanticModel_.GetConversion(node);
+      var conversion = _semanticModel.GetConversion(node);
       if (conversion.IsUserDefined && conversion.IsImplicit) {
         expression = BuildConversionExpression(conversion.MethodSymbol, expression);
       }
@@ -869,7 +869,7 @@ namespace CSharpLua {
     }
 
     private LuaExpressionSyntax GerUserDefinedOperatorExpression(BinaryExpressionSyntax node) {
-      var methodSymbol = (IMethodSymbol)semanticModel_.GetSymbolInfo(node).Symbol;
+      var methodSymbol = (IMethodSymbol)_semanticModel.GetSymbolInfo(node).Symbol;
       if (methodSymbol != null) {
         var typeSymbol = methodSymbol.ContainingType;
         if (typeSymbol != null) {
@@ -953,14 +953,14 @@ namespace CSharpLua {
         goto Fail;
       }
 
-      var limitConst = semanticModel_.GetConstantValue(condition.Right);
+      var limitConst = _semanticModel.GetConstantValue(condition.Right);
       if (limitConst.HasValue) {
         if (!(limitConst.Value is int)) {
           goto Fail;
         }
       } else {
         bool isReadOnly = false;
-        var symbol = semanticModel_.GetSymbolInfo(condition.Right).Symbol;
+        var symbol = _semanticModel.GetSymbolInfo(condition.Right).Symbol;
         if (symbol != null) {
           if (symbol.Kind == SymbolKind.Field) {
             isReadOnly = ((IFieldSymbol)symbol).IsReadOnly;
@@ -1108,7 +1108,7 @@ namespace CSharpLua {
     }
 
     private LuaExpressionSyntax BuildDeconstructExpression(ExpressionSyntax node, LuaExpressionSyntax expression) {
-      var typeSymbol = semanticModel_.GetTypeInfo(node).Type;
+      var typeSymbol = _semanticModel.GetTypeInfo(node).Type;
       return BuildDeconstructExpression(typeSymbol, expression, node);
     }
   }

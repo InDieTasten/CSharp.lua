@@ -20,59 +20,73 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpLua.LuaAst {
-  public class LuaFunctionExpressionSyntax : LuaExpressionSyntax {
-    public readonly LuaParameterListSyntax ParameterList = new LuaParameterListSyntax();
-    public string FunctionKeyword => Tokens.Function;
-    public bool HasYield { get; set; }
-    public int TempIndex;
+namespace CSharpLua.LuaAst
+{
+    public class LuaFunctionExpressionSyntax : LuaExpressionSyntax
+    {
+        public readonly LuaParameterListSyntax ParameterList = new LuaParameterListSyntax();
+        public string FunctionKeyword => Tokens.Function;
+        public bool HasYield { get; set; }
+        public int TempIndex;
 
-    public readonly LuaBlockSyntax Body = new LuaBlockSyntax() {
-      OpenBraceToken = Tokens.Empty,
-      CloseBraceToken = Tokens.End,
-    };
+        public readonly LuaBlockSyntax Body = new LuaBlockSyntax()
+        {
+            OpenBraceToken = Tokens.Empty,
+            CloseBraceToken = Tokens.End,
+        };
 
-    public void AddParameter(LuaParameterSyntax parameter) {
-      ParameterList.Parameters.Add(parameter);
+        public void AddParameter(LuaParameterSyntax parameter)
+        {
+            ParameterList.Parameters.Add(parameter);
+        }
+
+        public void AddParameters(IEnumerable<LuaParameterSyntax> parameters)
+        {
+            ParameterList.Parameters.AddRange(parameters);
+        }
+
+        public void AddParameter(LuaIdentifierNameSyntax identifier)
+        {
+            AddParameter(new LuaParameterSyntax(identifier));
+        }
+
+        public void AddStatement(LuaStatementSyntax statement)
+        {
+            Body.Statements.Add(statement);
+        }
+
+        public void AddStatement(LuaExpressionSyntax expression)
+        {
+            AddStatement(new LuaExpressionStatementSyntax(expression));
+        }
+
+        public void AddStatements(IEnumerable<LuaStatementSyntax> statements)
+        {
+            Body.Statements.AddRange(statements);
+        }
+
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
 
-    public void AddParameters(IEnumerable<LuaParameterSyntax> parameters) {
-      ParameterList.Parameters.AddRange(parameters);
+    public sealed class LuaConstructorAdapterExpressionSyntax : LuaFunctionExpressionSyntax
+    {
+        public bool IsInvokeThisCtor { get; set; }
+        public bool IsStatic { get; set; }
     }
 
-    public void AddParameter(LuaIdentifierNameSyntax identifier) {
-      AddParameter(new LuaParameterSyntax(identifier));
+    public abstract class LuaCheckReturnFunctionExpressionSyntax : LuaFunctionExpressionSyntax
+    {
     }
 
-    public void AddStatement(LuaStatementSyntax statement) {
-      Body.Statements.Add(statement);
+    public sealed class LuaTryAdapterExpressionSyntax : LuaCheckReturnFunctionExpressionSyntax
+    {
+        public LuaIdentifierNameSyntax CatchTemp { get; set; }
     }
 
-    public void AddStatement(LuaExpressionSyntax expression) {
-      AddStatement(new LuaExpressionStatementSyntax(expression));
+    public sealed class LuaUsingAdapterExpressionSyntax : LuaCheckReturnFunctionExpressionSyntax
+    {
     }
-
-    public void AddStatements(IEnumerable<LuaStatementSyntax> statements) {
-      Body.Statements.AddRange(statements);
-    }
-
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
-
-  public sealed class LuaConstructorAdapterExpressionSyntax : LuaFunctionExpressionSyntax {
-    public bool IsInvokeThisCtor { get; set; }
-    public bool IsStatic { get; set; }
-  }
-
-  public abstract class LuaCheckReturnFunctionExpressionSyntax : LuaFunctionExpressionSyntax {
-  }
-
-  public sealed class LuaTryAdapterExpressionSyntax : LuaCheckReturnFunctionExpressionSyntax {
-    public LuaIdentifierNameSyntax CatchTemp { get; set; }
-  }
-
-  public sealed class LuaUsingAdapterExpressionSyntax : LuaCheckReturnFunctionExpressionSyntax {
-  }
 }
