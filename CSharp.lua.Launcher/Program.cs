@@ -62,7 +62,7 @@ Options
                     {
                         attributes = string.Empty;
                     }
-                    Transpiler w = new Transpiler(folder, output, lib, meta, cscArguments, isClassic, indentCount, attributes);
+                    Compiler w = new Compiler(folder, output, lib, meta, cscArguments, isClassic, indentCount, attributes);
                     w.Do();
                     Console.WriteLine("all operator success");
                     Console.WriteLine($"end {DateTime.Now}");
