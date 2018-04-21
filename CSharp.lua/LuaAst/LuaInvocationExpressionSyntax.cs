@@ -20,51 +20,59 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpLua.LuaAst {
-  public sealed class LuaInvocationExpressionSyntax : LuaExpressionSyntax {
-    public LuaArgumentListSyntax ArgumentList { get; } = new LuaArgumentListSyntax();
-    public LuaExpressionSyntax Expression { get; }
+namespace CSharpLua.LuaAst
+{
+    public sealed class LuaInvocationExpressionSyntax : LuaExpressionSyntax
+    {
+        public LuaArgumentListSyntax ArgumentList { get; } = new LuaArgumentListSyntax();
+        public LuaExpressionSyntax Expression { get; }
 
-    public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression) {
-      if (expression == null) {
-        throw new ArgumentNullException(nameof(expression));
-      }
-      Expression = expression;
-    }
+        public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression)
+        {
+            Expression = expression ?? throw new ArgumentNullException(nameof(expression));
+        }
 
-    public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, LuaExpressionSyntax argument) : this(expression) {
-      AddArgument(argument);
-    }
+        public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, LuaExpressionSyntax argument) : this(expression)
+        {
+            AddArgument(argument);
+        }
 
-    public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, LuaExpressionSyntax argument1, LuaExpressionSyntax argument2) : this(expression) {
-      AddArgument(argument1);
-      AddArgument(argument2);
-    }
+        public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, LuaExpressionSyntax argument1, LuaExpressionSyntax argument2) : this(expression)
+        {
+            AddArgument(argument1);
+            AddArgument(argument2);
+        }
 
-    public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, LuaExpressionSyntax argument1, LuaExpressionSyntax argument2, LuaExpressionSyntax argument3) : this(expression) {
-      AddArgument(argument1);
-      AddArgument(argument2);
-      AddArgument(argument3);
-    }
+        public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, LuaExpressionSyntax argument1, LuaExpressionSyntax argument2, LuaExpressionSyntax argument3) : this(expression)
+        {
+            AddArgument(argument1);
+            AddArgument(argument2);
+            AddArgument(argument3);
+        }
 
-    public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, IEnumerable<LuaExpressionSyntax> arguments) : this(expression) {
-      AddArguments(arguments);
-    }
+        public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, IEnumerable<LuaExpressionSyntax> arguments) : this(expression)
+        {
+            AddArguments(arguments);
+        }
 
-    public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, params LuaExpressionSyntax[] arguments) : this(expression) {
-      AddArguments(arguments);
-    }
+        public LuaInvocationExpressionSyntax(LuaExpressionSyntax expression, params LuaExpressionSyntax[] arguments) : this(expression)
+        {
+            AddArguments(arguments);
+        }
 
-    public void AddArgument(LuaExpressionSyntax argument) {
-      ArgumentList.AddArgument(argument);
-    }
+        public void AddArgument(LuaExpressionSyntax argument)
+        {
+            ArgumentList.AddArgument(argument);
+        }
 
-    public void AddArguments(IEnumerable<LuaExpressionSyntax> arguments) {
-      ArgumentList.AddArguments(arguments);
-    }
+        public void AddArguments(IEnumerable<LuaExpressionSyntax> arguments)
+        {
+            ArgumentList.AddArguments(arguments);
+        }
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
-  }
 }

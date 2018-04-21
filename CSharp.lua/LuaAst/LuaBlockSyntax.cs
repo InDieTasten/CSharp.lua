@@ -20,34 +20,42 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpLua.LuaAst {
-  public class LuaBlockSyntax : LuaStatementSyntax {
-    public string OpenBraceToken { get; set; }
-    public string CloseBraceToken { get; set; }
-    public LuaSyntaxList<LuaStatementSyntax> Statements { get; } = new LuaSyntaxList<LuaStatementSyntax>();
+namespace CSharpLua.LuaAst
+{
+    public class LuaBlockSyntax : LuaStatementSyntax
+    {
+        public string OpenBraceToken { get; set; }
+        public string CloseBraceToken { get; set; }
+        public LuaSyntaxList<LuaStatementSyntax> Statements { get; } = new LuaSyntaxList<LuaStatementSyntax>();
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
+
+        internal void AddLocalArea(LuaIdentifierNameSyntax name)
+        {
+            var localArea = Statements.FirstOrDefault() as LuaLocalAreaSyntax;
+            if (localArea == null)
+            {
+                localArea = new LuaLocalAreaSyntax();
+                Statements.Insert(0, localArea);
+            }
+            localArea.Variables.Add(name);
+        }
     }
 
-    internal void AddLocalArea(LuaIdentifierNameSyntax name) {
-      var localArea = Statements.FirstOrDefault() as LuaLocalAreaSyntax;
-      if (localArea == null) {
-        localArea = new LuaLocalAreaSyntax();
-        Statements.Insert(0, localArea);
-      }
-      localArea.Variables.Add(name);
-    }
-  }
+    public sealed class LuaBlockStatementSyntax : LuaBlockSyntax
+    {
+        public LuaBlockStatementSyntax()
+        {
+            OpenBraceToken = Tokens.Do;
+            CloseBraceToken = Tokens.End;
+        }
 
-  public sealed class LuaBlockStatementSyntax : LuaBlockSyntax {
-    public LuaBlockStatementSyntax() {
-      OpenBraceToken = Tokens.Do;
-      CloseBraceToken = Tokens.End;
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
-
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
 }

@@ -21,88 +21,110 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpLua.LuaAst {
-  public sealed class LuaMemberAccessExpressionSyntax : LuaExpressionSyntax {
-    public LuaExpressionSyntax Expression { get; }
-    public LuaExpressionSyntax Name { get; }
-    public string OperatorToken { get; }
+namespace CSharpLua.LuaAst
+{
+    public sealed class LuaMemberAccessExpressionSyntax : LuaExpressionSyntax
+    {
+        public LuaExpressionSyntax Expression { get; }
+        public LuaExpressionSyntax Name { get; }
+        public string OperatorToken { get; }
 
-    public LuaMemberAccessExpressionSyntax(LuaExpressionSyntax expression, LuaExpressionSyntax name, bool isObjectColon = false) {
-      Expression = expression ?? throw new ArgumentNullException(nameof(expression));
-      Name = name ?? throw new ArgumentNullException(nameof(name));
-      OperatorToken = isObjectColon ? Tokens.ObjectColon : Tokens.Dot;
+        public LuaMemberAccessExpressionSyntax(LuaExpressionSyntax expression, LuaExpressionSyntax name, bool isObjectColon = false)
+        {
+            Expression = expression ?? throw new ArgumentNullException(nameof(expression));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            OperatorToken = isObjectColon ? Tokens.ObjectColon : Tokens.Dot;
+        }
+
+        public bool IsObjectColon
+        {
+            get
+            {
+                return OperatorToken == Tokens.ObjectColon;
+            }
+        }
+
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
 
-    public bool IsObjectColon {
-      get {
-        return OperatorToken == Tokens.ObjectColon;
-      }
-    }
+    public sealed class LuaPropertyAdapterExpressionSyntax : LuaExpressionSyntax
+    {
+        public LuaExpressionSyntax Expression { get; private set; }
+        public string OperatorToken { get; private set; }
+        public LuaPropertyOrEventIdentifierNameSyntax Name { get; }
+        public readonly LuaArgumentListSyntax ArgumentList = new LuaArgumentListSyntax();
 
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
+        public LuaPropertyAdapterExpressionSyntax(LuaPropertyOrEventIdentifierNameSyntax name)
+        {
+            Name = name;
+        }
 
-  public sealed class LuaPropertyAdapterExpressionSyntax : LuaExpressionSyntax {
-    public LuaExpressionSyntax Expression { get; private set; }
-    public string OperatorToken { get; private set; }
-    public LuaPropertyOrEventIdentifierNameSyntax Name { get; }
-    public readonly LuaArgumentListSyntax ArgumentList = new LuaArgumentListSyntax();
+        public LuaPropertyAdapterExpressionSyntax(LuaExpressionSyntax expression, LuaPropertyOrEventIdentifierNameSyntax name, bool isObjectColon)
+        {
+            Update(expression, isObjectColon);
+            Name = name;
+        }
 
-    public LuaPropertyAdapterExpressionSyntax(LuaPropertyOrEventIdentifierNameSyntax name) {
-      Name = name;
-    }
+        public void Update(LuaExpressionSyntax expression, bool isObjectColon)
+        {
+            Contract.Assert(Expression == null);
+            Expression = expression;
+            OperatorToken = isObjectColon ? Tokens.ObjectColon : Tokens.Dot;
+        }
 
-    public LuaPropertyAdapterExpressionSyntax(LuaExpressionSyntax expression, LuaPropertyOrEventIdentifierNameSyntax name, bool isObjectColon) {
-      Update(expression, isObjectColon);
-      Name = name;
-    }
+        public bool IsGetOrAdd
+        {
+            set
+            {
+                Name.IsGetOrAdd = value;
+            }
+            get
+            {
+                return Name.IsGetOrAdd;
+            }
+        }
 
-    public void Update(LuaExpressionSyntax expression, bool isObjectColon) {
-      Contract.Assert(Expression == null);
-      Expression = expression;
-      OperatorToken = isObjectColon ? Tokens.ObjectColon : Tokens.Dot;
-    }
+        public bool IsProperty
+        {
+            get
+            {
+                return Name.IsProperty;
+            }
+        }
 
-    public bool IsGetOrAdd {
-      set {
-        Name.IsGetOrAdd = value;
-      }
-      get {
-        return Name.IsGetOrAdd;
-      }
-    }
+        public bool IsObjectColon
+        {
+            get
+            {
+                return OperatorToken == Tokens.ObjectColon;
+            }
+        }
 
-    public bool IsProperty {
-      get {
-        return Name.IsProperty;
-      }
-    }
+        public LuaPropertyAdapterExpressionSyntax GetClone()
+        {
+            LuaPropertyAdapterExpressionSyntax clone = new LuaPropertyAdapterExpressionSyntax(Name.GetClone())
+            {
+                Expression = Expression,
+                OperatorToken = OperatorToken
+            };
+            clone.ArgumentList.Arguments.AddRange(ArgumentList.Arguments);
+            return clone;
+        }
 
-    public bool IsObjectColon {
-      get {
-        return OperatorToken == Tokens.ObjectColon;
-      }
-    }
+        public LuaPropertyAdapterExpressionSyntax GetCloneOfGet()
+        {
+            LuaPropertyAdapterExpressionSyntax clone = GetClone();
+            clone.IsGetOrAdd = true;
+            IsGetOrAdd = false;
+            return clone;
+        }
 
-    public LuaPropertyAdapterExpressionSyntax GetClone() {
-      LuaPropertyAdapterExpressionSyntax clone = new LuaPropertyAdapterExpressionSyntax(Name.GetClone());
-      clone.Expression = Expression;
-      clone.OperatorToken = OperatorToken;
-      clone.ArgumentList.Arguments.AddRange(ArgumentList.Arguments);
-      return clone;
+        internal override void Render(LuaRenderer renderer)
+        {
+            renderer.Render(this);
+        }
     }
-
-    public LuaPropertyAdapterExpressionSyntax GetCloneOfGet() {
-      LuaPropertyAdapterExpressionSyntax clone = GetClone();
-      clone.IsGetOrAdd = true;
-      IsGetOrAdd = false;
-      return clone;
-    }
-
-    internal override void Render(LuaRenderer renderer) {
-      renderer.Render(this);
-    }
-  }
 }
