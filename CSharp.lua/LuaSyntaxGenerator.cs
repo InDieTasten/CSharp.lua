@@ -140,7 +140,7 @@ namespace CSharpLua
             {
                 SemanticModel semanticModel = GetSemanticModel(syntaxTree);
                 CompilationUnitSyntax compilationUnitSyntax = (CompilationUnitSyntax)syntaxTree.GetRoot();
-                LuaSyntaxNodeTransfor transfor = new LuaSyntaxNodeTransfor(this, semanticModel);
+                LuaSyntaxNodeTransformer transfor = new LuaSyntaxNodeTransformer(this, semanticModel);
                 var luaCompilationUnit = (LuaCompilationUnitSyntax)compilationUnitSyntax.Accept(transfor);
                 luaCompilationUnits.Add(luaCompilationUnit);
             }
@@ -276,7 +276,7 @@ namespace CSharpLua
                 foreach (var typeDeclarations in types)
                 {
                     PartialTypeDeclaration major = typeDeclarations.Min();
-                    LuaSyntaxNodeTransfor transfor = new LuaSyntaxNodeTransfor(this, null);
+                    LuaSyntaxNodeTransformer transfor = new LuaSyntaxNodeTransformer(this, null);
                     transfor.AcceptPartialType(major, typeDeclarations);
                 }
             }
@@ -1598,7 +1598,7 @@ namespace CSharpLua
             return new LuaIdentifierNameSyntax(GetTypeRefactorName(typeSymbol) ?? name);
         }
 
-        internal LuaExpressionSyntax GetTypeName(ISymbol symbol, LuaSyntaxNodeTransfor transfor = null)
+        internal LuaExpressionSyntax GetTypeName(ISymbol symbol, LuaSyntaxNodeTransformer transfor = null)
         {
             if (symbol.Kind == SymbolKind.TypeParameter)
             {
@@ -1647,7 +1647,7 @@ namespace CSharpLua
             }
         }
 
-        private List<LuaExpressionSyntax> GetTypeArguments(INamedTypeSymbol typeSymbol, LuaSyntaxNodeTransfor transfor)
+        private List<LuaExpressionSyntax> GetTypeArguments(INamedTypeSymbol typeSymbol, LuaSyntaxNodeTransformer transfor)
         {
             List<LuaExpressionSyntax> typeArguments = new List<LuaExpressionSyntax>();
             FillExternalTypeArgument(typeArguments, typeSymbol, transfor);
@@ -1655,7 +1655,7 @@ namespace CSharpLua
             return typeArguments;
         }
 
-        private void FillExternalTypeArgument(List<LuaExpressionSyntax> typeArguments, INamedTypeSymbol typeSymbol, LuaSyntaxNodeTransfor transfor)
+        private void FillExternalTypeArgument(List<LuaExpressionSyntax> typeArguments, INamedTypeSymbol typeSymbol, LuaSyntaxNodeTransformer transfor)
         {
             var externalType = typeSymbol.ContainingType;
             if (externalType != null)
@@ -1665,7 +1665,7 @@ namespace CSharpLua
             }
         }
 
-        private void FillTypeArguments(List<LuaExpressionSyntax> typeArguments, INamedTypeSymbol typeSymbol, LuaSyntaxNodeTransfor transfor)
+        private void FillTypeArguments(List<LuaExpressionSyntax> typeArguments, INamedTypeSymbol typeSymbol, LuaSyntaxNodeTransformer transfor)
         {
             foreach (var typeArgument in typeSymbol.TypeArguments)
             {
@@ -1687,7 +1687,7 @@ namespace CSharpLua
             }
         }
 
-        internal LuaIdentifierNameSyntax GetTypeShortName(ISymbol symbol, LuaSyntaxNodeTransfor transfor = null)
+        internal LuaIdentifierNameSyntax GetTypeShortName(ISymbol symbol, LuaSyntaxNodeTransformer transfor = null)
         {
             INamedTypeSymbol typeSymbol = (INamedTypeSymbol)symbol.OriginalDefinition;
             string name = typeSymbol.GetTypeShortName(GetNamespaceMapName, GetTypeRefactorName);
