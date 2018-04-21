@@ -120,13 +120,13 @@ namespace CSharpLua
 
         public void Do()
         {
-            Compiler();
+            Compile();
         }
 
         /// <summary>
         /// Compiles .cs files to CS syntax tree, generates Lua syntax tree, and generates .lua files
         /// </summary>
-        private void Compiler()
+        private void Compile()
         {
             // Apply configurations
             var commandLineArguments = CSharpCommandLineParser.Default.Parse(_cscArguments, null, null);
