@@ -31,10 +31,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     __ctor__ = function (this, condition) 
       __init__(this)
       this.__base__.__ctor__(this)
-      if condition == nil then
-        System.throw(CSharpLua.ArgumentNullException("condition" --[[nameof(condition)]]))
-      end
-      this.Condition = condition
+      this.Condition = condition or System.throw(CSharpLua.ArgumentNullException("condition" --[[nameof(condition)]]))
     end
     getIfKeyword = function (this) 
       return "if" --[[Keyword.If]]
@@ -70,10 +67,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     __ctor__ = function (this, condition) 
       __init__(this)
       this.__base__.__ctor__(this)
-      if condition == nil then
-        System.throw(CSharpLua.ArgumentNullException("condition" --[[nameof(condition)]]))
-      end
-      this.Condition = condition
+      this.Condition = condition or System.throw(CSharpLua.ArgumentNullException("condition" --[[nameof(condition)]]))
     end
     getElseIfKeyword = function (this) 
       return "elseif" --[[Keyword.ElseIf]]
@@ -150,8 +144,8 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
 
       local ifStatement = nil
       for _, section in System.each(sections) do
-        local statement = System.as(section, CSharpLuaLuaAst.LuaIfStatementSyntax)
-        if statement ~= nil then
+        local statement = section
+        if System.is(statement, CSharpLuaLuaAst.LuaIfStatementSyntax) then
           if ifStatement == nil then
             ifStatement = statement
           else

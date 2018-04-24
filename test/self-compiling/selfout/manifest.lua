@@ -4,6 +4,7 @@ return function (dir)
   local require = require
   local load = function(module) return require(dir .. module) end
 
+  load("Compiler")
   load("LuaAst.LuaArgumentSyntax")
   load("LuaAst.LuaBlockSyntax")
   load("LuaAst.LuaCompilationUnitSyntax")
@@ -24,9 +25,8 @@ return function (dir)
   load("LuaAst.LuaWrapFunctionStatementSynatx")
   load("LuaRenderer")
   load("LuaSyntaxGenerator")
-  load("LuaSyntaxNodeTransfor")
-  load("Utils")
-  load("Worker")
+  load("LuaSyntaxNodeTransformer")
+  load("Utilities")
   load("XmlMetaProvider")
 
   System.init({
@@ -46,11 +46,12 @@ return function (dir)
     "CSharpLua.LuaAst.LuaSyntaxNode.Keyword", 
     "CSharpLua.LuaAst.LuaTableKeySyntax", 
     "CSharpLua.LuaAst.LuaCheckReturnFunctionExpressionSyntax", 
-    "CSharpLua.LuaSyntaxNodeTransfor.LuaSyntaxSearcher", 
-    "CSharpLua.LuaSyntaxNodeTransfor.IQueryRangeVariable", 
+    "CSharpLua.LuaSyntaxNodeTransformer.LuaSyntaxSearcher", 
+    "CSharpLua.LuaSyntaxNodeTransformer.IQueryRangeVariable", 
     "CSharpLua.ArgumentNullException", 
     "CSharpLua.CmdArgumentException", 
     "CSharpLua.CompilationErrorException", 
+    "CSharpLua.Compiler", 
     "CSharpLua.InvalidOperationException", 
     "CSharpLua.LuaAst.LuaArgumentListSyntax", 
     "CSharpLua.LuaAst.LuaArgumentSyntax", 
@@ -133,19 +134,18 @@ return function (dir)
     "CSharpLua.LuaSyntaxGenerator", 
     "CSharpLua.LuaSyntaxGenerator.PretreatmentChecker", 
     "CSharpLua.LuaSyntaxGenerator.SettingInfo", 
-    "CSharpLua.LuaSyntaxNodeTransfor", 
-    "CSharpLua.LuaSyntaxNodeTransfor.BlockCommonNode", 
-    "CSharpLua.LuaSyntaxNodeTransfor.ContinueSearcher", 
-    "CSharpLua.LuaSyntaxNodeTransfor.LocalVarSearcher", 
-    "CSharpLua.LuaSyntaxNodeTransfor.LuaSyntaxSearcher.FoundException", 
-    "CSharpLua.LuaSyntaxNodeTransfor.MethodDeclarationResult", 
-    "CSharpLua.LuaSyntaxNodeTransfor.MethodInfo", 
-    "CSharpLua.LuaSyntaxNodeTransfor.QueryIdentifier", 
-    "CSharpLua.LuaSyntaxNodeTransfor.QueryPackVariable", 
-    "CSharpLua.LuaSyntaxNodeTransfor.ReturnStatementSearcher", 
+    "CSharpLua.LuaSyntaxNodeTransformer", 
+    "CSharpLua.LuaSyntaxNodeTransformer.BlockCommonNode", 
+    "CSharpLua.LuaSyntaxNodeTransformer.ContinueSearcher", 
+    "CSharpLua.LuaSyntaxNodeTransformer.LocalVarSearcher", 
+    "CSharpLua.LuaSyntaxNodeTransformer.LuaSyntaxSearcher.FoundException", 
+    "CSharpLua.LuaSyntaxNodeTransformer.MethodDeclarationResult", 
+    "CSharpLua.LuaSyntaxNodeTransformer.MethodInfo", 
+    "CSharpLua.LuaSyntaxNodeTransformer.QueryIdentifier", 
+    "CSharpLua.LuaSyntaxNodeTransformer.QueryPackVariable", 
+    "CSharpLua.LuaSyntaxNodeTransformer.ReturnStatementSearcher", 
     "CSharpLua.PartialTypeDeclaration", 
     "CSharpLua.Utility", 
-    "CSharpLua.Worker", 
     "CSharpLua.XmlMetaProvider", 
     "CSharpLua.XmlMetaProvider.MethodMetaInfo", 
     "CSharpLua.XmlMetaProvider.TypeMetaInfo", 

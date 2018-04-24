@@ -23,7 +23,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
   namespace.class("LuaWrapFunctionStatementSynatx", function (namespace) 
     local UpdateIdentifiers, getBody, AddStatement, AddStatements, Render, __init__, __ctor__
     __init__ = function (this) 
-      this.function_ = CSharpLuaLuaAst.LuaFunctionExpressionSyntax()
+      this._function = CSharpLuaLuaAst.LuaFunctionExpressionSyntax()
     end
     __ctor__ = function (this) 
       __init__(this)
@@ -33,14 +33,14 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
       local memberAccess = CSharpLuaLuaAst.LuaMemberAccessExpressionSyntax(target, memberName, false)
       local invoke = CSharpLuaLuaAst.LuaInvocationExpressionSyntax:new(1, memberAccess)
       invoke:AddArgument(CSharpLuaLuaAst.LuaStringLiteralExpressionSyntax(name))
-      invoke:AddArgument(this.function_)
+      invoke:AddArgument(this._function)
       if parameter ~= nil then
-        this.function_:AddParameter1(parameter)
+        this._function:AddParameter1(parameter)
       end
       this.Statement = CSharpLuaLuaAst.LuaExpressionStatementSyntax(invoke)
     end
     getBody = function (this) 
-      return this.function_.Body
+      return this._function.Body
     end
     AddStatement = function (this, statement) 
       getBody(this).Statements:Add(statement)
