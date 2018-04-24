@@ -35,7 +35,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     __init__ = function (this) 
       this.Statements = CSharpLuaLuaAst.LuaSyntaxList_1(CSharpLuaLuaAst.LuaStatementSyntax)()
       this.importAreaStatements = CSharpLuaLuaAst.LuaStatementListSyntax()
-      this.usingDeclares_ = System.List(CSharpLuaLuaAstLuaCompilationUnitSyntax.UsingDeclare)()
+      this._usingDeclares = System.List(CSharpLuaLuaAstLuaCompilationUnitSyntax.UsingDeclare)()
     end
     __ctor__ = function (this, filePath) 
       __init__(this)
@@ -55,25 +55,25 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
       this.Statements:Add(statement)
     end
     getIsEmpty = function (this) 
-      return this.typeDeclarationCount_ == 0
+      return this._typeDeclarationCount == 0
     end
     ImportLinq = function (this) 
-      if not this.isImportLinq_ then
+      if not this._isImportLinq then
         AddImport(this, CSharpLuaLuaAst.LuaIdentifierNameSyntax.Linq1, CSharpLuaLuaAst.LuaIdentifierNameSyntax.SystemLinqEnumerable)
-        this.isImportLinq_ = true
+        this._isImportLinq = true
       end
     end
     AddImport = function (this, name, value) 
       this.importAreaStatements.Statements:Add(CSharpLuaLuaAst.LuaLocalVariableDeclaratorSyntax:new(2, name, value))
     end
     AddTypeDeclarationCount = function (this) 
-      this.typeDeclarationCount_ = this.typeDeclarationCount_ + 1
+      this._typeDeclarationCount = this._typeDeclarationCount + 1
     end
     AddImport1 = function (this, prefix, newPrefix, isFromCode) 
-      if not this.usingDeclares_:Exists(function (i) 
+      if not this._usingDeclares:Exists(function (i) 
         return i.Prefix == prefix
       end) then
-        this.usingDeclares_:Add(System.create(CSharpLuaLuaAstLuaCompilationUnitSyntax.UsingDeclare(), function (default) 
+        this._usingDeclares:Add(System.create(CSharpLuaLuaAstLuaCompilationUnitSyntax.UsingDeclare(), function (default) 
           default.Prefix = prefix
           default.NewPrefix = newPrefix
           default.IsFromCode = isFromCode
@@ -81,7 +81,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
       end
     end
     CheckUsingDeclares = function (this) 
-      local imports = Linq.ToList(Linq.Where(this.usingDeclares_, function (i) 
+      local imports = Linq.ToList(Linq.Where(this._usingDeclares, function (i) 
         return not i.IsFromCode
       end))
       if #imports > 0 then
@@ -93,7 +93,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
         end
       end
 
-      local usingDeclares = Linq.ToList(Linq.Where(this.usingDeclares_, function (i) 
+      local usingDeclares = Linq.ToList(Linq.Where(this._usingDeclares, function (i) 
         return i.IsFromCode
       end))
       if #usingDeclares > 0 then
@@ -139,8 +139,8 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
           global.CSharpLua.LuaAst.LuaSyntaxNode
         }
       end, 
-      isImportLinq_ = false, 
-      typeDeclarationCount_ = 0, 
+      _isImportLinq = false, 
+      _typeDeclarationCount = 0, 
       AddStatement = AddStatement, 
       getIsEmpty = getIsEmpty, 
       ImportLinq = ImportLinq, 

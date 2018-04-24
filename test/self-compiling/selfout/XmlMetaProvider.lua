@@ -229,72 +229,72 @@ System.namespace("CSharpLua", function (namespace)
       local getModel, Field, Property, Method, GetFieldModel, GetPropertyModel, GetMethodMetaInfo, __init__, 
       __ctor__
       __init__ = function (this) 
-        this.fields_ = System.Dictionary(System.String, CSharpLuaXmlMetaProviderXmlMetaModel.FieldModel)()
-        this.propertys_ = System.Dictionary(System.String, CSharpLuaXmlMetaProviderXmlMetaModel.PropertyModel)()
-        this.methods_ = System.Dictionary(System.String, CSharpLuaXmlMetaProvider.MethodMetaInfo)()
+        this._fields = System.Dictionary(System.String, CSharpLuaXmlMetaProviderXmlMetaModel.FieldModel)()
+        this._properties = System.Dictionary(System.String, CSharpLuaXmlMetaProviderXmlMetaModel.PropertyModel)()
+        this._methods = System.Dictionary(System.String, CSharpLuaXmlMetaProvider.MethodMetaInfo)()
       end
       __ctor__ = function (this, model) 
         __init__(this)
-        this.model_ = model
+        this._model = model
         Field(this)
         Property(this)
         Method(this)
       end
       getModel = function (this) 
-        return this.model_
+        return this._model
       end
       Field = function (this) 
-        if this.model_.Fields ~= nil then
-          for _, fieldModel in System.each(this.model_.Fields) do
+        if this._model.Fields ~= nil then
+          for _, fieldModel in System.each(this._model.Fields) do
             if System.String.IsNullOrEmpty(fieldModel.name) then
-              System.throw(System.ArgumentException(("type [{0}] has a field name is empty"):Format(this.model_.name)))
+              System.throw(System.ArgumentException(("type [{0}]'s field name mustn't be empty"):Format(this._model.name)))
             end
 
-            if this.fields_:ContainsKey(fieldModel.name) then
-              System.throw(System.ArgumentException(("type [{0}]'s field [{1}] is already exists"):Format(this.model_.name, fieldModel.name)))
+            if this._fields:ContainsKey(fieldModel.name) then
+              System.throw(System.ArgumentException(("type [{0}]'s field [{1}] already exists."):Format(this._model.name, fieldModel.name)))
             end
-            this.fields_:Add(fieldModel.name, fieldModel)
+            this._fields:Add(fieldModel.name, fieldModel)
           end
         end
       end
       Property = function (this) 
-        if this.model_.Propertys ~= nil then
-          for _, propertyModel in System.each(this.model_.Propertys) do
+        if this._model.Propertys ~= nil then
+          for _, propertyModel in System.each(this._model.Propertys) do
             if System.String.IsNullOrEmpty(propertyModel.name) then
-              System.throw(System.ArgumentException(("type [{0}] has a property name is empty"):Format(this.model_.name)))
+              System.throw(System.ArgumentException(("type [{0}]'s property name mustn't be empty."):Format(this._model.name)))
             end
 
-            if this.fields_:ContainsKey(propertyModel.name) then
-              System.throw(System.ArgumentException(("type [{0}]'s property [{1}] is already exists"):Format(this.model_.name, propertyModel.name)))
+            if this._fields:ContainsKey(propertyModel.name) then
+              System.throw(System.ArgumentException(("type [{0}]'s property [{1}] already exists."):Format(this._model.name, propertyModel.name)))
             end
-            this.propertys_:Add(propertyModel.name, propertyModel)
+            this._properties:Add(propertyModel.name, propertyModel)
           end
         end
       end
       Method = function (this) 
-        if this.model_.Methods ~= nil then
-          for _, methodModel in System.each(this.model_.Methods) do
+        if this._model.Methods ~= nil then
+          for _, methodModel in System.each(this._model.Methods) do
             if System.String.IsNullOrEmpty(methodModel.name) then
-              System.throw(System.ArgumentException(("type [{0}] has a method name is empty"):Format(this.model_.name)))
+              System.throw(System.ArgumentException(("type [{0}]'s method name mustn't be empty."):Format(this._model.name)))
             end
 
-            local info = CSharpLua.Utility.GetOrDefault1(this.methods_, methodModel.name, nil, System.String, CSharpLuaXmlMetaProvider.MethodMetaInfo)
+            local info = CSharpLua.Utility.GetOrDefault1(this._methods, methodModel.name, nil, System.String, CSharpLuaXmlMetaProvider.MethodMetaInfo)
             if info == nil then
               info = CSharpLuaXmlMetaProvider.MethodMetaInfo()
-              this.methods_:Add(methodModel.name, info)
+              this._methods:Add(methodModel.name, info)
             end
             info:Add(methodModel)
           end
         end
       end
       GetFieldModel = function (this, name) 
-        return CSharpLua.Utility.GetOrDefault1(this.fields_, name, nil, System.String, CSharpLuaXmlMetaProviderXmlMetaModel.FieldModel)
+        return CSharpLua.Utility.GetOrDefault1(this._fields, name, nil, System.String, CSharpLuaXmlMetaProviderXmlMetaModel.FieldModel)
       end
       GetPropertyModel = function (this, name) 
-        return CSharpLua.Utility.GetOrDefault1(this.propertys_, name, nil, System.String, CSharpLuaXmlMetaProviderXmlMetaModel.PropertyModel)
+        return CSharpLua.Utility.GetOrDefault1(this._properties, name, nil, System.String, CSharpLuaXmlMetaProviderXmlMetaModel.PropertyModel)
       end
       GetMethodMetaInfo = function (this, name) 
-        return CSharpLua.Utility.GetOrDefault1(this.methods_, name, nil, System.String, CSharpLuaXmlMetaProvider.MethodMetaInfo)
+        return CSharpLua.Utility.GetOrDefault1(this._methods, name, nil, System.String, CSharpLuaXmlMetaProvider.MethodMetaInfo)
       end
       return {
         getModel = getModel, 
@@ -306,19 +306,19 @@ System.namespace("CSharpLua", function (namespace)
     end)
     local LoadNamespace, LoadType, GetNamespaceMapName, MayHaveCodeMeta, GetTypeShortString, GetTypeMapName, GetTypeMetaInfo, IsPropertyField, 
     GetFieldCodeTemplate, GetProertyCodeTemplate, GetInternalMethodMetaInfo, GetMethodMetaInfo, GetMethodMapName, GetMethodCodeTemplate, IsMethodIgnoreGeneric, IsExportAttribute, 
-    CheckFieldNameOfProtobufnet, __init__, __ctor__
+    __init__, __ctor__
     __init__ = function (this) 
-      this.namespaceNameMaps_ = System.Dictionary(System.String, System.String)()
-      this.typeMetas_ = System.Dictionary(System.String, CSharpLuaXmlMetaProvider.TypeMetaInfo)()
-      this.exportAttributes_ = System.HashSet(System.String)()
+      this._namespaceNameMaps = System.Dictionary(System.String, System.String)()
+      this._typeMetas = System.Dictionary(System.String, CSharpLuaXmlMetaProvider.TypeMetaInfo)()
+      this._exportAttributes = System.HashSet(System.String)()
     end
     __ctor__ = function (this, files) 
       __init__(this)
       for _, file in System.each(files) do
-        local xmlSeliz = SystemXmlSerialization.XmlSerializer(System.typeof(CSharpLuaXmlMetaProvider.XmlMetaModel))
+        local xmlSerializer = SystemXmlSerialization.XmlSerializer(System.typeof(CSharpLuaXmlMetaProvider.XmlMetaModel))
         System.try(function () 
           System.using(SystemIO.FileStream(file, 3 --[[FileMode.Open]], 1 --[[FileAccess.Read]], 1 --[[FileShare.Read]]), function (stream) 
-            local model = System.cast(CSharpLuaXmlMetaProvider.XmlMetaModel, xmlSeliz:Deserialize(stream))
+            local model = System.cast(CSharpLuaXmlMetaProvider.XmlMetaModel, xmlSerializer:Deserialize(stream))
             local assembly = model.Assembly
             if assembly ~= nil and assembly.Namespaces ~= nil then
               for _, namespaceModel in System.each(assembly.Namespaces) do
@@ -330,30 +330,30 @@ System.namespace("CSharpLua", function (namespace)
               if export.Attributes ~= nil then
                 for _, attribute in System.each(export.Attributes) do
                   if System.String.IsNullOrEmpty(attribute.Name) then
-                    System.throw(System.ArgumentException("attribute's name is empty"))
+                    System.throw(System.ArgumentException("attribute's name mustn't be empty."))
                   end
-                  this.exportAttributes_:Add(attribute.Name)
+                  this._exportAttributes:Add(attribute.Name)
                 end
               end
             end
           end)
         end, function (default) 
-          local e = default
-          System.throw(System.Exception(("load xml file wrong at {0}"):Format(file), e))
+          local ex = default
+          System.throw(System.Exception(("Loading xml files encountered an issue at {0}."):Format(file), ex))
         end)
       end
     end
     LoadNamespace = function (this, model) 
       local namespaceName = model.name
       if System.String.IsNullOrEmpty(namespaceName) then
-        System.throw(System.ArgumentException("namespace's name is empty"))
+        System.throw(System.ArgumentException("namespace's name mustn't be empty."))
       end
 
       if not System.String.IsNullOrEmpty(model.Name) then
-        if this.namespaceNameMaps_:ContainsKey(namespaceName) then
-          System.throw(System.ArgumentException(("namespace [{0}] is already has"):Format(namespaceName)))
+        if this._namespaceNameMaps:ContainsKey(namespaceName) then
+          System.throw(System.ArgumentException(("namespace [{0}] already exists."):Format(namespaceName)))
         end
-        this.namespaceNameMaps_:Add(namespaceName, model.Name)
+        this._namespaceNameMaps:Add(namespaceName, model.Name)
       end
 
       if model.Classes ~= nil then
@@ -371,20 +371,20 @@ System.namespace("CSharpLua", function (namespace)
       for _, classModel in System.each(classes) do
         local className = classModel.name
         if System.String.IsNullOrEmpty(className) then
-          System.throw(System.ArgumentException(("namespace [{0}] has a class's name is empty"):Format(namespaceName)))
+          System.throw(System.ArgumentException(("namespace [{0}]'s class name mustn't be empty."):Format(namespaceName)))
         end
 
         local classesfullName = (namespaceName .. '.') .. className
         classesfullName = classesfullName:Replace(94 --[['^']], 95 --[['_']])
-        if this.typeMetas_:ContainsKey(classesfullName) then
-          System.throw(System.ArgumentException(("type [{0}] is already has"):Format(classesfullName)))
+        if this._typeMetas:ContainsKey(classesfullName) then
+          System.throw(System.ArgumentException(("type [{0}] already exists."):Format(classesfullName)))
         end
         local info = CSharpLuaXmlMetaProvider.TypeMetaInfo(classModel)
-        this.typeMetas_:Add(classesfullName, info)
+        this._typeMetas:Add(classesfullName, info)
       end
     end
     GetNamespaceMapName = function (this, symbol, original) 
-      return CSharpLua.Utility.GetOrDefault1(this.namespaceNameMaps_, original, nil, System.String, System.String)
+      return CSharpLua.Utility.GetOrDefault1(this._namespaceNameMaps, original, nil, System.String, System.String)
     end
     MayHaveCodeMeta = function (this, symbol) 
       return symbol:getDeclaredAccessibility() == 6 --[[Accessibility.Public]] and not CSharpLua.Utility.IsFromCode(symbol)
@@ -395,7 +395,7 @@ System.namespace("CSharpLua", function (namespace)
     end
     GetTypeMapName = function (this, symbol, shortName) 
       if MayHaveCodeMeta(this, symbol) then
-        local info = CSharpLua.Utility.GetOrDefault1(this.typeMetas_, shortName, nil, System.String, CSharpLuaXmlMetaProvider.TypeMetaInfo)
+        local info = CSharpLua.Utility.GetOrDefault1(this._typeMetas, shortName, nil, System.String, CSharpLuaXmlMetaProvider.TypeMetaInfo)
         local default = info
         if default ~= nil then
           default = default.getModel().Name
@@ -406,7 +406,7 @@ System.namespace("CSharpLua", function (namespace)
     end
     GetTypeMetaInfo = function (this, memberSymbol) 
       local typeName = GetTypeShortString(this, memberSymbol:getContainingType())
-      return CSharpLua.Utility.GetOrDefault1(this.typeMetas_, typeName, nil, System.String, CSharpLuaXmlMetaProvider.TypeMetaInfo)
+      return CSharpLua.Utility.GetOrDefault1(this._typeMetas, typeName, nil, System.String, CSharpLuaXmlMetaProvider.TypeMetaInfo)
     end
     IsPropertyField = function (this, symbol) 
       if MayHaveCodeMeta(this, symbol) then
@@ -514,15 +514,7 @@ System.namespace("CSharpLua", function (namespace)
       return GetMethodMetaInfo(this, symbol, 2 --[[MethodMetaType.IgnoreGeneric]]) == System.Boolean.TrueString
     end
     IsExportAttribute = function (this, attributeTypeSymbol) 
-      return this.exportAttributes_:getCount() > 0 and this.exportAttributes_:Contains(attributeTypeSymbol:ToString())
-    end
-    CheckFieldNameOfProtobufnet = function (this, fieldName, containingType) 
-      if not containingType:getInterfaces():getIsEmpty() then
-        if CSharpLua.Utility.First(containingType:getInterfaces(), MicrosoftCodeAnalysis.INamedTypeSymbol):ToString() == "ProtoBuf.IExtensible" then
-          fieldName = fieldName:TrimStart(95 --[['_']])
-        end
-      end
-      return fieldName
+      return this._exportAttributes:getCount() > 0 and this._exportAttributes:Contains(attributeTypeSymbol:ToString())
     end
     return {
       GetNamespaceMapName = GetNamespaceMapName, 
@@ -535,7 +527,6 @@ System.namespace("CSharpLua", function (namespace)
       GetMethodCodeTemplate = GetMethodCodeTemplate, 
       IsMethodIgnoreGeneric = IsMethodIgnoreGeneric, 
       IsExportAttribute = IsExportAttribute, 
-      CheckFieldNameOfProtobufnet = CheckFieldNameOfProtobufnet, 
       __ctor__ = __ctor__
     }
   end)

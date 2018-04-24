@@ -26,14 +26,8 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     local getIsObjectColon, Render, __ctor__
     __ctor__ = function (this, expression, name, isObjectColon) 
       this.__base__.__ctor__(this)
-      if expression == nil then
-        System.throw(CSharpLua.ArgumentNullException("expression" --[[nameof(expression)]]))
-      end
-      if name == nil then
-        System.throw(CSharpLua.ArgumentNullException("name" --[[nameof(name)]]))
-      end
-      this.Expression = expression
-      this.Name = name
+      this.Expression = expression or System.throw(CSharpLua.ArgumentNullException("expression" --[[nameof(expression)]]))
+      this.Name = name or System.throw(CSharpLua.ArgumentNullException("name" --[[nameof(name)]]))
       this.OperatorToken = isObjectColon and ":" --[[Tokens.ObjectColon]] or "." --[[Tokens.Dot]]
     end
     getIsObjectColon = function (this) 
@@ -89,9 +83,10 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
       return this.OperatorToken == ":" --[[Tokens.ObjectColon]]
     end
     GetClone = function (this) 
-      local clone = CSharpLuaLuaAst.LuaPropertyAdapterExpressionSyntax:new(1, this.Name:GetClone())
-      clone.Expression = this.Expression
-      clone.OperatorToken = this.OperatorToken
+      local clone = System.create(CSharpLuaLuaAst.LuaPropertyAdapterExpressionSyntax:new(1, this.Name:GetClone()), function (default) 
+        default.Expression = this.Expression
+        default.OperatorToken = this.OperatorToken
+      end)
       clone.ArgumentList.Arguments:AddRange(this.ArgumentList.Arguments)
       return clone
     end

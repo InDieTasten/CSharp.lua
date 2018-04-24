@@ -77,10 +77,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     local Render, __ctor__
     __ctor__ = function (this, expression) 
       this.__base__.__ctor__(this)
-      if expression == nil then
-        System.throw(CSharpLua.ArgumentNullException("expression" --[[nameof(expression)]]))
-      end
-      this.Expression = expression
+      this.Expression = expression or System.throw(CSharpLua.ArgumentNullException("expression" --[[nameof(expression)]]))
     end
     Render = function (this, renderer) 
       renderer:Render27(this)
@@ -188,14 +185,8 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     local getOpenBracketToken, getCloseBracketToken, Render, __ctor__
     __ctor__ = function (this, expression, index) 
       this.__base__.__ctor__(this)
-      if expression == nil then
-        System.throw(CSharpLua.ArgumentNullException("expression" --[[nameof(expression)]]))
-      end
-      if index == nil then
-        System.throw(CSharpLua.ArgumentNullException("index" --[[nameof(index)]]))
-      end
-      this.Expression = expression
-      this.Index = index
+      this.Expression = expression or System.throw(CSharpLua.ArgumentNullException("expression" --[[nameof(expression)]]))
+      this.Index = index or System.throw(CSharpLua.ArgumentNullException("index" --[[nameof(index)]]))
     end
     getOpenBracketToken = function (this) 
       return "[" --[[Tokens.OpenBracket]]
