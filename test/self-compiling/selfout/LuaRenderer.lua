@@ -34,24 +34,24 @@ System.namespace("CSharpLua", function (namespace)
     Render52, Render53, Render54, Render55, Render56, Render57, Render58, Render59, 
     Render60, Render61, __ctor__
     __ctor__ = function (this, generator, writer) 
-      this.generator_ = generator
-      this.writer_ = writer
+      this._generator = generator
+      this._writer = writer
     end
     getSetting = function (this) 
-      return this.generator_.Setting
+      return this._generator.Setting
     end
     AddIndent = function (this) 
-      this.indentLevel_ = this.indentLevel_ + 1
+      this._indentLevel = this._indentLevel + 1
     end
     Outdent = function (this) 
-      if this.indentLevel_ == 0 then
+      if this._indentLevel == 0 then
         System.throw(CSharpLua.InvalidOperationException())
       end
-      this.indentLevel_ = this.indentLevel_ - 1
+      this._indentLevel = this._indentLevel - 1
     end
     WriteNewLine = function (this) 
-      this.writer_:Write(10 --[['\n']])
-      this.isNewLine_ = true
+      this._writer:Write(10 --[['\n']])
+      this._isNewLine = true
     end
     WriteComma = function (this) 
       Write(this, ", ")
@@ -60,17 +60,17 @@ System.namespace("CSharpLua", function (namespace)
       Write(this, " ")
     end
     Write = function (this, value) 
-      if this.isNewLine_ then
+      if this._isNewLine then
         do
           local i = 0
-          while i < this.indentLevel_ do
-            this.writer_:Write(getSetting(this).IndentString)
+          while i < this._indentLevel do
+            this._writer:Write(getSetting(this).IndentString)
             i = i + 1
           end
         end
-        this.isNewLine_ = false
+        this._isNewLine = false
       end
-      this.writer_:Write(value)
+      this._writer:Write(value)
     end
     Write1 = function (this, semicolonToken) 
       if getSetting(this).HasSemicolon then
@@ -345,7 +345,7 @@ System.namespace("CSharpLua", function (namespace)
         for _, item in System.each(node.Variables) do
           if count > 0 then
             WriteComma(this)
-            if count % 8 --[[kPerLineCount]] == 0 then
+            if count % 8 --[[perLineCount]] == 0 then
               WriteNewLine(this)
             end
           end
@@ -530,8 +530,8 @@ System.namespace("CSharpLua", function (namespace)
       WriteSeparatedSyntaxList(this, node.Expressions)
     end
     return {
-      isNewLine_ = false, 
-      indentLevel_ = 0, 
+      _isNewLine = false, 
+      _indentLevel = 0, 
       Render = Render, 
       Render1 = Render1, 
       Render2 = Render2, 

@@ -101,10 +101,10 @@ System.namespace("CSharpLua", function (namespace)
 
   namespace.class("Utility", function (namespace) 
     local First, Last, GetOrDefault, GetOrDefault1, TryAdd, AddAt, IndexOf, TrimEnd, 
-    GetCommondLines, GetArgument, GetCurrentDirectory, Split, IsPrivate, IsPrivate1, IsStatic, IsAbstract, 
+    GetCommandLineArguments, GetArgument, GetCurrentDirectory, Split, IsPrivate, IsPrivate1, IsStatic, IsAbstract, 
     IsReadOnly, IsConst, IsParams, IsPartial, IsOutOrRef, IsStringType, IsDelegateType, IsIntegerType, 
     IsNullableType, IsImmutable, IsInterfaceImplementation, InterfaceImplementations, IsFromCode, IsOverridable, OverriddenSymbol, IsOverridden, 
-    IsPropertyField, IsEventFiled, HasStaticCtor, IsStaticLazy, IsAssignment, systemLinqEnumerableType_, IsSystemLinqEnumerable, GetLocationString, 
+    IsPropertyField, IsEventFiled, HasStaticConstructor, IsStaticLazy, IsAssignment, systemLinqEnumerableType_, IsSystemLinqEnumerable, GetLocationString, 
     IsSubclassOf, IsImplementInterface, IsBaseNumberType, IsNumberTypeAssignableFrom, IsAssignableFrom, CheckSymbolDefinition, CheckMethodDefinition, CheckOriginalDefinition, 
     IsMainEntryPoint, IsExtendSelf, IsTimeSpanType, IsGenericIEnumerableType, IsExplicitInterfaceImplementation, IsExportSyntaxTrivia, IsTypeDeclaration, GetIEnumerableElementType, 
     DynamicGetProperty, GetTupleElementTypes, GetTupleElementIndex, GetTupleElementCount, identifierRegex_, IsIdentifierIllegal, ToBase63, EncodeToIdentifier, 
@@ -118,7 +118,7 @@ System.namespace("CSharpLua", function (namespace)
       this.AddAt = AddAt
       this.IndexOf = IndexOf
       this.TrimEnd = TrimEnd
-      this.GetCommondLines = GetCommondLines
+      this.GetCommandLineArguments = GetCommandLineArguments
       this.GetArgument = GetArgument
       this.GetCurrentDirectory = GetCurrentDirectory
       this.Split = Split
@@ -144,7 +144,7 @@ System.namespace("CSharpLua", function (namespace)
       this.IsOverridden = IsOverridden
       this.IsPropertyField = IsPropertyField
       this.IsEventFiled = IsEventFiled
-      this.HasStaticCtor = HasStaticCtor
+      this.HasStaticConstructor = HasStaticConstructor
       this.IsStaticLazy = IsStaticLazy
       this.IsAssignment = IsAssignment
       this.IsSystemLinqEnumerable = IsSystemLinqEnumerable
@@ -234,8 +234,8 @@ System.namespace("CSharpLua", function (namespace)
       end
       return s
     end
-    GetCommondLines = function (args) 
-      local cmds = System.Dictionary(System.String, System.Array(System.String))()
+    GetCommandLineArguments = function (args) 
+      local commandLineArguments = System.Dictionary(System.String, System.Array(System.String))()
 
       local key = ""
       local values = System.List(System.String)()
@@ -244,7 +244,7 @@ System.namespace("CSharpLua", function (namespace)
         local i = arg:Trim()
         if i:StartsWith("-") then
           if not System.String.IsNullOrEmpty(key) then
-            cmds:Add(key, values:ToArray())
+            commandLineArguments:Add(key, values:ToArray())
             key = ""
             values:Clear()
           end
@@ -255,9 +255,9 @@ System.namespace("CSharpLua", function (namespace)
       end
 
       if not System.String.IsNullOrEmpty(key) then
-        cmds:Add(key, values:ToArray())
+        commandLineArguments:Add(key, values:ToArray())
       end
-      return cmds
+      return commandLineArguments
     end
     GetArgument = function (args, name, isOption) 
       local values = GetOrDefault1(args, name, nil, System.String, System.Array(System.String))
@@ -265,7 +265,7 @@ System.namespace("CSharpLua", function (namespace)
         if isOption then
           return nil
         end
-        System.throw(CSharpLua.CmdArgumentException(name .. " is not found"))
+        System.throw(CSharpLua.CmdArgumentException(name .. " couldn't be found."))
       end
       return values:get(0)
     end
@@ -512,7 +512,7 @@ System.namespace("CSharpLua", function (namespace)
       end
       return false
     end
-    HasStaticCtor = function (typeSymbol) 
+    HasStaticConstructor = function (typeSymbol) 
       return SystemLinq.ImmutableArrayExtensions.Any(typeSymbol:getConstructors(), function (i) 
         return i:getIsStatic()
       end, MicrosoftCodeAnalysis.IMethodSymbol)
@@ -521,7 +521,7 @@ System.namespace("CSharpLua", function (namespace)
       local success = symbol:getIsStatic() and not IsPrivate(symbol)
       if success then
         local typeSymbol = symbol:getContainingType()
-        return HasStaticCtor(typeSymbol)
+        return HasStaticConstructor(typeSymbol)
       end
       return success
     end
@@ -783,13 +783,13 @@ System.namespace("CSharpLua", function (namespace)
       return false, identifierName
     end
     ToBase63 = function (number) 
-      local kAlphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
-      local basis = #kAlphabet
+      local base63Alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
+      local basis = #base63Alphabet
       local n = number
       local sb = SystemText.StringBuilder()
       while n > 0 do
-        local ch = kAlphabet:get(n % basis)
-        sb:Append(ch)
+        local ch = base63Alphabet:get(n % basis)
+        sb:AppendChar(ch)
         n = n // basis
       end
       return sb:ToString()
@@ -798,7 +798,7 @@ System.namespace("CSharpLua", function (namespace)
       local sb = SystemText.StringBuilder()
       for _, c in System.each(name) do
         if c < 127 then
-          sb:Append(c)
+          sb:AppendChar(c)
         else
           local base63 = ToBase63(c)
           sb:Append(base63)
@@ -821,10 +821,10 @@ System.namespace("CSharpLua", function (namespace)
         sb:Append(typeName)
         local typeParametersCount = externalType:getTypeParameters():getLength()
         if typeParametersCount > 0 then
-          sb:Append(95 --[['_']])
+          sb:AppendChar(95 --[['_']])
           sb:Append(typeParametersCount)
         end
-        sb:Append(46 --[['.']])
+        sb:AppendChar(46 --[['.']])
       end
     end
     GetTypeShortName = function (typeSymbol, funcOfNamespace, funcOfTypeName) 
@@ -846,7 +846,7 @@ System.namespace("CSharpLua", function (namespace)
       end
       if #namespaceName > 0 then
         sb:Append(namespaceName)
-        sb:Append(46 --[['.']])
+        sb:AppendChar(46 --[['.']])
       end
       FillExternalTypeName(sb, typeSymbol, funcOfTypeName)
       local extern = funcOfTypeName
@@ -857,7 +857,7 @@ System.namespace("CSharpLua", function (namespace)
       sb:Append(typeName)
       local typeParametersCount = typeSymbol:getTypeParameters():getLength()
       if typeParametersCount > 0 then
-        sb:Append(95 --[['_']])
+        sb:AppendChar(95 --[['_']])
         sb:Append(typeParametersCount)
       end
       return sb:ToString()

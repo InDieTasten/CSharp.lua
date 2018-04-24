@@ -31,10 +31,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     __ctor1__ = function (this, expression) 
       __init__(this)
       this.__base__.__ctor__(this)
-      if expression == nil then
-        System.throw(CSharpLua.ArgumentNullException("expression" --[[nameof(expression)]]))
-      end
-      this.Expression = expression
+      this.Expression = expression or System.throw(CSharpLua.ArgumentNullException("expression" --[[nameof(expression)]]))
     end
     __ctor2__ = function (this, expression, argument) 
       __ctor1__(this, expression)

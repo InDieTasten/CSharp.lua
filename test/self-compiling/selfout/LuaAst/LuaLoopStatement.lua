@@ -33,13 +33,10 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     __ctor__ = function (this, identifier, expression) 
       __init__(this)
       this.__base__.__ctor__(this)
-      if identifier == nil then
-        System.throw(CSharpLua.ArgumentNullException("identifier" --[[nameof(identifier)]]))
-      end
       if expression == nil then
         System.throw(CSharpLua.ArgumentNullException("expression" --[[nameof(expression)]]))
       end
-      this.Identifier = identifier
+      this.Identifier = identifier or System.throw(CSharpLua.ArgumentNullException("identifier" --[[nameof(identifier)]]))
       this.Expression = CSharpLuaLuaAst.LuaInvocationExpressionSyntax:new(2, CSharpLuaLuaAst.LuaIdentifierNameSyntax.Each, expression)
     end
     getForKeyword = function (this) 
@@ -79,18 +76,9 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     __ctor__ = function (this, identifier, startExpression, limitExpression, stepExpression) 
       __init__(this)
       this.__base__.__ctor__(this)
-      if identifier == nil then
-        System.throw(CSharpLua.ArgumentNullException("identifier" --[[nameof(identifier)]]))
-      end
-      if startExpression == nil then
-        System.throw(CSharpLua.ArgumentNullException("startExpression" --[[nameof(startExpression)]]))
-      end
-      if limitExpression == nil then
-        System.throw(CSharpLua.ArgumentNullException("limitExpression" --[[nameof(limitExpression)]]))
-      end
-      this.Identifier = identifier
-      this.StartExpression = startExpression
-      this.LimitExpression = limitExpression
+      this.Identifier = identifier or System.throw(CSharpLua.ArgumentNullException("identifier" --[[nameof(identifier)]]))
+      this.StartExpression = startExpression or System.throw(CSharpLua.ArgumentNullException("startExpression" --[[nameof(startExpression)]]))
+      this.LimitExpression = limitExpression or System.throw(CSharpLua.ArgumentNullException("limitExpression" --[[nameof(limitExpression)]]))
       this.StepExpression = stepExpression
     end
     getForKeyword = function (this) 
@@ -126,10 +114,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     __ctor__ = function (this, condition) 
       __init__(this)
       this.__base__.__ctor__(this)
-      if condition == nil then
-        System.throw(CSharpLua.ArgumentNullException("condition" --[[nameof(condition)]]))
-      end
-      this.Condition = condition
+      this.Condition = condition or System.throw(CSharpLua.ArgumentNullException("condition" --[[nameof(condition)]]))
     end
     getWhileKeyword = function (this) 
       return "while" --[[Keyword.While]]
@@ -157,10 +142,7 @@ System.namespace("CSharpLua.LuaAst", function (namespace)
     __ctor__ = function (this, condition) 
       __init__(this)
       this.__base__.__ctor__(this)
-      if condition == nil then
-        System.throw(CSharpLua.ArgumentNullException("condition" --[[nameof(condition)]]))
-      end
-      this.Condition = condition
+      this.Condition = condition or System.throw(CSharpLua.ArgumentNullException("condition" --[[nameof(condition)]]))
     end
     getRepeatKeyword = function (this) 
       return "repeat" --[[Keyword.Repeat]]

@@ -27,7 +27,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace CSharpLua
 {
-    public sealed class Transpiler
+    public sealed class Compiler
     {
         private static readonly string[] SystemDlls = new string[] {
             "System.dll",
@@ -49,7 +49,7 @@ namespace CSharpLua
         private bool _useSemicolons;
         private string[] _attributes;
 
-        public Transpiler(string inputDirectory, string outputDirectory, string libraries, string metas, string cscArguments, bool isClassic, string indentCount, string attributes)
+        public Compiler(string inputDirectory, string outputDirectory, string libraries, string metas, string cscArguments, bool isClassic, string indentCount, string attributes)
         {
             _inputDirectory = inputDirectory;
             _outputDirectory = outputDirectory;
@@ -120,13 +120,13 @@ namespace CSharpLua
 
         public void Do()
         {
-            Compiler();
+            Compile();
         }
 
         /// <summary>
         /// Compiles .cs files to CS syntax tree, generates Lua syntax tree, and generates .lua files
         /// </summary>
-        private void Compiler()
+        private void Compile()
         {
             // Apply configurations
             var commandLineArguments = CSharpCommandLineParser.Default.Parse(_cscArguments, null, null);
