@@ -178,6 +178,49 @@ namespace Microsoft.CodeAnalysis
             return builder.ToString();
         }
 
+        internal static bool TryParseOption(string arg, out string name, out string value)
+        {
+            if (!IsOption(arg))
+            {
+                name = null;
+                value = null;
+                return false;
+            }
+
+            int colon = arg.IndexOf(':');
+
+            // temporary heuristic to detect Unix-style rooted paths
+            // pattern /goo/*  or  //* will not be treated as a compiler option
+            //
+            // TODO: consider introducing "/s:path" to disambiguate paths starting with /
+            if (arg.Length > 1 && arg[0] != '-')
+            {
+                int separator = arg.IndexOf('/', 1);
+                if (separator > 0 && (colon < 0 || separator < colon))
+                {
+                    //   "/goo/
+                    //   "//
+                    name = null;
+                    value = null;
+                    return false;
+                }
+            }
+
+            if (colon >= 0)
+            {
+                name = arg.Substring(1, colon - 1);
+                value = arg.Substring(colon + 1);
+            }
+            else
+            {
+                name = arg.Substring(1);
+                value = null;
+            }
+
+            name = name.ToLowerInvariant();
+            return true;
+        }
+
         /// <summary>
         /// Mimic behavior of the native function by the same name.
         /// </summary>

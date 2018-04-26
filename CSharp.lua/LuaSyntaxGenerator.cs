@@ -110,9 +110,10 @@ namespace CSharpLua
                 EmitResult result = compilation.Emit(ms);
                 if (!result.Success)
                 {
-                    var errors = result.Diagnostics.Where(i => i.Severity == DiagnosticSeverity.Error);
-                    string message = string.Join(Environment.NewLine, errors);
-                    throw new CompilationErrorException(message);
+                    throw new NotImplementedException(); // [Lua] Temporary type mismatch (original / ported mismatch)
+                    //var errors = result.Diagnostics.Where(i => i.Severity == DiagnosticSeverity.Error);
+                    //string message = string.Join(Environment.NewLine, errors);
+                    //throw new CompilationErrorException(message);
                 }
             }
             _compilation = compilation;
