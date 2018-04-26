@@ -46,7 +46,6 @@ System.namespace("CSharpLua", function (namespace)
       end
       this._cscArguments = default
       this._isNewest = not isClassic
-      local task
       this._useSemicolons = false
       local extern
       extern, this._indentCount = System.Int.TryParse(indentCount, nil)
