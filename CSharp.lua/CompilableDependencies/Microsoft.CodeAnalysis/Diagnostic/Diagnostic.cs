@@ -14,7 +14,7 @@ namespace Microsoft.CodeAnalysis
     /// <summary>
     /// Represents a diagnostic, such as a compiler error or a warning, along with the location where it occurred.
     /// </summary>
-    [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+    // [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
     public abstract partial class Diagnostic
     {
         internal const string CompilerDiagnosticCategory = "Compiler";
@@ -107,6 +107,16 @@ namespace Microsoft.CodeAnalysis
         {
             throw new NotImplementedException(); // [Lua]
             //return Create(descriptor, location, effectiveSeverity: descriptor.DefaultSeverity, additionalLocations, properties, messageArgs);
+        }
+
+        internal static Diagnostic Create(CommonMessageProvider messageProvider, int errorCode, params object[] arguments)
+        {
+            return Create(new DiagnosticInfo(messageProvider, errorCode, arguments));
+        }
+
+        internal static Diagnostic Create(DiagnosticInfo info)
+        {
+            return new DiagnosticWithInfo(info, Location.None);
         }
 
         /// <summary>

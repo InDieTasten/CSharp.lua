@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Roslyn.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -41,6 +42,158 @@ namespace Microsoft.CodeAnalysis
         public CommandLineArguments Parse(IEnumerable<string> args, string baseDirectory, string sdkDirectory, string additionalReferenceDirectories)
         {
             return CommonParse(args, baseDirectory, sdkDirectory, additionalReferenceDirectories);
+        }
+
+        internal IEnumerable<CommandLineSourceFile> ParseFileArgument(string arg, string baseDirectory, IList<Diagnostic> errors)
+        {
+            //Debug.Assert(IsScriptCommandLineParser || !arg.StartsWith("-", StringComparison.Ordinal) && !arg.StartsWith("@", StringComparison.Ordinal));
+
+            // We remove all doubles quotes from a file name. So that, for example:
+            //   "Path With Spaces"\goo.cs
+            // becomes
+            //   Path With Spaces\goo.cs
+
+            string path = RemoveQuotesAndSlashes(arg);
+
+            int wildcard = path.IndexOfAny(s_wildcards);
+            if (wildcard != -1)
+            {
+                foreach (var file in ExpandFileNamePattern(path, baseDirectory, SearchOption.TopDirectoryOnly, errors))
+                {
+                    yield return file;
+                }
+            }
+            else
+            {
+                string resolvedPath = FileUtilities.ResolveRelativePath(path, baseDirectory);
+                if (resolvedPath == null)
+                {
+                    errors.Add(Diagnostic.Create(MessageProvider, (int)MessageProvider.FTL_InvalidInputFileName, path));
+                }
+                else
+                {
+                    yield return ToCommandLineSourceFile(resolvedPath);
+                }
+            }
+        }
+
+        private CommandLineSourceFile ToCommandLineSourceFile(string resolvedPath)
+        {
+            string extension = PathUtilities.GetExtension(resolvedPath);
+
+            bool isScriptFile;
+            if (IsScriptCommandLineParser)
+            {
+                isScriptFile = !string.Equals(extension, RegularFileExtension, StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                // TODO: uncomment when fixing https://github.com/dotnet/roslyn/issues/5325
+                //isScriptFile = string.Equals(extension, ScriptFileExtension, StringComparison.OrdinalIgnoreCase);
+                isScriptFile = false;
+            }
+
+            return new CommandLineSourceFile(resolvedPath, isScriptFile);
+        }
+
+        private IEnumerable<CommandLineSourceFile> ExpandFileNamePattern(
+            string path,
+            string baseDirectory,
+            SearchOption searchOption,
+            IList<Diagnostic> errors)
+        {
+            string directory = PathUtilities.GetDirectoryName(path);
+            string pattern = PathUtilities.GetFileName(path);
+
+            var resolvedDirectoryPath = (directory.Length == 0) ? baseDirectory : FileUtilities.ResolveRelativePath(directory, baseDirectory);
+
+            IEnumerator<string> enumerator = null;
+            try
+            {
+                bool yielded = false;
+
+                // NOTE: Directory.EnumerateFiles(...) surprisingly treats pattern "." the 
+                //       same way as "*"; as we don't expect anything to be found by this 
+                //       pattern, let's just not search in this case
+                pattern = pattern.Trim(s_searchPatternTrimChars);
+                bool singleDotPattern = string.Equals(pattern, ".", StringComparison.Ordinal);
+
+                if (!singleDotPattern)
+                {
+                    while (true)
+                    {
+                        string resolvedPath = null;
+                        try
+                        {
+                            if (enumerator == null)
+                            {
+                                enumerator = EnumerateFiles(resolvedDirectoryPath, pattern, searchOption).GetEnumerator();
+                            }
+
+                            if (!enumerator.MoveNext())
+                            {
+                                break;
+                            }
+
+                            resolvedPath = enumerator.Current;
+                        }
+                        catch
+                        {
+                            resolvedPath = null;
+                        }
+
+                        if (resolvedPath != null)
+                        {
+                            // just in case EnumerateFiles returned a relative path
+                            resolvedPath = FileUtilities.ResolveRelativePath(resolvedPath, baseDirectory);
+                        }
+
+                        if (resolvedPath == null)
+                        {
+                            errors.Add(Diagnostic.Create(MessageProvider, (int)MessageProvider.FTL_InvalidInputFileName, path));
+                            break;
+                        }
+
+                        yielded = true;
+                        yield return ToCommandLineSourceFile(resolvedPath);
+                    }
+                }
+
+                // the pattern didn't match any files:
+                if (!yielded)
+                {
+                    if (searchOption == SearchOption.AllDirectories)
+                    {
+                        // handling /recurse
+                        GenerateErrorForNoFilesFoundInRecurse(path, errors);
+                    }
+                    else
+                    {
+                        // handling wildcard in file spec
+                        errors.Add(Diagnostic.Create(MessageProvider, (int)MessageProvider.ERR_FileNotFound, path));
+                    }
+                }
+            }
+            finally
+            {
+                if (enumerator != null)
+                {
+                    enumerator.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Enumerates files in the specified directory and subdirectories whose name matches the given pattern.
+        /// </summary>
+        /// <param name="directory">Full path of the directory to enumerate.</param>
+        /// <param name="fileNamePattern">File name pattern. May contain wildcards '*' (matches zero or more characters) and '?' (matches any character).</param>
+        /// <param name="searchOption">Specifies whether to search the specified <paramref name="directory"/> only, or all its subdirectories as well.</param>
+        /// <returns>Sequence of file paths.</returns>
+        internal virtual IEnumerable<string> EnumerateFiles(string directory, string fileNamePattern, SearchOption searchOption)
+        {
+            //Debug.Assert(PathUtilities.IsAbsolute(directory));
+            return Directory.EnumerateFiles(directory, fileNamePattern, searchOption);
         }
 
         private static bool IsOption(string arg)
